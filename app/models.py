@@ -23,4 +23,11 @@ class User(Base):
     password = Column(String, nullable=False)
     avatar = Column(String, nullable=False, server_default='https://tygjaceleczftbswxxei.supabase.co/storage/v1/object/public/image_bucket/content%20common%20chat/Avatar%20Desktop/avatar_default.jpg')
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
+
+
+class Vote(Base):
+    __tablename__ = 'votes'
     
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+    message_id = Column(Integer, ForeignKey("socket.id", ondelete="CASCADE"), primary_key=True)
+    dir = Column(Integer)

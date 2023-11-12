@@ -1,5 +1,6 @@
 from typing import Optional
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
+from pydantic.types import conint
 from datetime import datetime
 
         
@@ -20,13 +21,15 @@ from datetime import datetime
 class SocketModel(BaseModel):
     created_at: datetime
     receiver_id: int
+    id: int
     message: str
     user_name: str
     avatar: str
+    vote: int
     
     class Config:
         from_attributes = True
-
+        
         
 # class UserCreate(BaseModel):
 #     email: EmailStr
@@ -46,3 +49,6 @@ class SocketModel(BaseModel):
 class TokenData(BaseModel):
     id: Optional[int] = None
     
+class Vote(BaseModel):
+    message_id: int
+    dir: conint(le=1)
