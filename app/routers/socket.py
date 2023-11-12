@@ -65,7 +65,7 @@ async def websocket_endpoint(
     
     user = await oauth2.get_current_user(token, session)
 
-    await manager.connect(websocket, user.id, user.user_name, user.avatar)
+    await manager.connect(websocket, user.id, user.user_name, user.avatar, rooms)
     
     x_real_ip = websocket.headers.get('x-real-ip')
     x_forwarded_for = websocket.headers.get('x-forwarded-for')
@@ -74,7 +74,7 @@ async def websocket_endpoint(
     print(f"X-Real-IP: {x_real_ip}")
     print(f"X-Forwarded-For: {x_forwarded_for}")
     
-    await manager.send_active_users()
+    await manager.send_active_users(rooms)
     
     # Отримуємо останні повідомлення
     messages = await fetch_last_messages(rooms, session)
@@ -116,7 +116,7 @@ async def websocket_endpoint(
     except WebSocketDisconnect:
         manager.disconnect(websocket, user.id)
         
-        await manager.send_active_users()
+        await manager.send_active_users(rooms)
         
         current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         await manager.broadcast(f"Цей користувач -> {user.user_name} пішов з чату 🏃",
