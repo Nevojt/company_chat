@@ -119,7 +119,7 @@ async def websocket_endpoint(
         await manager.send_active_users(rooms)
         
         current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        await manager.broadcast(f"Цей користувач -> {user.user_name} пішов з чату 🏃",
+        await manager.broadcast(f"Цей користувач -> {user.user_name} пішов з чату {rooms}",
                                 rooms=rooms,
                                 created_at=current_time,
                                 receiver_id=user.id,
