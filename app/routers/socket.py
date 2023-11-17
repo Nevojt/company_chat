@@ -44,9 +44,9 @@ async def fetch_last_messages(rooms: str, session: AsyncSession) -> List[schemas
             receiver_id=socket.receiver_id,
             message=socket.message,
             user_name=user.user_name,
-            avatar=user.avatar,
-            id=socket.id,
-            vote=votes  # Додавання кількості голосів
+            avatar=user.avatar
+            # id=socket.id,
+            # vote=votes  # Додавання кількості голосів
         )
         for socket, user, votes in raw_messages
     ]
@@ -87,30 +87,30 @@ async def websocket_endpoint(
         while True:
             data = await websocket.receive_json()
             
-            if 'vote' in data:
-                try:
-                    vote_data = schemas.Vote(**data['vote'])
-                    await process_vote(vote_data, session, user)
+            # if 'vote' in data:
+            #     try:
+            #         vote_data = schemas.Vote(**data['vote'])
+            #         await process_vote(vote_data, session, user)
                     
-                    messages = await fetch_last_messages(rooms, session)
-                    for message in messages:
+            #         messages = await fetch_last_messages(rooms, session)
+            #         for message in messages:
                     
-                        for connection in manager.active_connections:
-                            await connection.send_text(message.model_dump_json())
+            #             for connection in manager.active_connections:
+            #                 await connection.send_text(message.model_dump_json())
 
-                except Exception as e:
-                    await websocket.send_json({"error": str(e)})
-            else:
-                current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                
-                await manager.broadcast(f"{data['message']}",
-                                        rooms=rooms,
-                                        created_at=current_time,
-                                        receiver_id=user.id,
-                                        user_name=user.user_name,
-                                        avatar=user.avatar,
+            #     except Exception as e:
+            #         await websocket.send_json({"error": str(e)})
+            # else:
+            current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            
+            await manager.broadcast(f"{data['message']}",
+                                    rooms=rooms,
+                                    created_at=current_time,
+                                    receiver_id=user.id,
+                                    user_name=user.user_name,
+                                    avatar=user.avatar,
 
-                                        add_to_db=True)
+                                    add_to_db=True)
                 
             
     except WebSocketDisconnect:

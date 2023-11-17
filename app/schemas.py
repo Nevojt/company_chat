@@ -21,11 +21,11 @@ from datetime import datetime
 class SocketModel(BaseModel):
     created_at: datetime
     receiver_id: int
-    id: int
+    # id: int
     message: str
     user_name: str
     avatar: str
-    vote: int
+    # vote: int
     
     class Config:
         from_attributes = True
