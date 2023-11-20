@@ -67,12 +67,12 @@ async def websocket_endpoint(
 
     await manager.connect(websocket, user.id, user.user_name, user.avatar, rooms)
     
-    x_real_ip = websocket.headers.get('x-real-ip')
-    x_forwarded_for = websocket.headers.get('x-forwarded-for')
+   # x_real_ip = websocket.headers.get('x-real-ip')
+    # x_forwarded_for = websocket.headers.get('x-forwarded-for')
 
     # Використання отриманих IP-адрес
-    print(f"X-Real-IP: {x_real_ip}")
-    print(f"X-Forwarded-For: {x_forwarded_for}")
+   # print(f"X-Real-IP: {x_real_ip}")
+    #print(f"X-Forwarded-For: {x_forwarded_for}")
     
     await manager.send_active_users(rooms)
     
