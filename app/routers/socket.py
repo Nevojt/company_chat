@@ -44,8 +44,8 @@ async def fetch_last_messages(rooms: str, session: AsyncSession) -> List[schemas
             receiver_id=socket.receiver_id,
             message=socket.message,
             user_name=user.user_name,
-            avatar=user.avatar
-            # id=socket.id,
+            avatar=user.avatar,
+            id=socket.id
             # vote=votes  # Додавання кількості голосів
         )
         for socket, user, votes in raw_messages
@@ -104,6 +104,7 @@ async def websocket_endpoint(
             current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             
             await manager.broadcast(f"{data['message']}",
+                                    
                                     rooms=rooms,
                                     created_at=current_time,
                                     receiver_id=user.id,

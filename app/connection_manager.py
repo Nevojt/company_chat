@@ -46,19 +46,23 @@ class ConnectionManager:
         adds the message to the database.
         """
         current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        message_id = None
+
+        if add_to_db:
+            message_id = await self.add_messages_to_database(message, rooms, receiver_id)
+
         message_data = {
+            
             "created_at": current_time,
             "receiver_id": receiver_id,
+            "id": message_id,
             "message": message,
             "user_name": user_name,
             "avatar": avatar,         
         }
-        
+
         message_json = json.dumps(message_data, ensure_ascii=False)
-        
-        if add_to_db:
-            await self.add_messages_to_database(message, rooms, receiver_id)
-            
+
         for connection in self.active_connections:
             await connection.send_text(message_json)
 
@@ -69,8 +73,12 @@ class ConnectionManager:
         """
         async with async_session_maker() as session:
             stmt = insert(models.Socket).values(message=message, rooms=rooms, receiver_id=receiver_id)
-            await session.execute(stmt)
+            result =  await session.execute(stmt)
             await session.commit()
+            
+            message_id = result.inserted_primary_key[0]
+            return message_id
+            
              
     async def send_active_users(self, room: str):
             """
