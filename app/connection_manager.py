@@ -63,8 +63,10 @@ class ConnectionManager:
 
         message_json = json.dumps(message_data, ensure_ascii=False)
 
-        for connection in self.active_connections:
-            await connection.send_text(message_json)
+        # Send the message only to users in the specified room
+        for user_id, (connection, _, _, user_room) in self.user_connections.items():
+            if user_room == rooms:
+                await connection.send_text(message_json)
 
     @staticmethod
     async def add_messages_to_database(message: str, rooms: str, receiver_id: int):
