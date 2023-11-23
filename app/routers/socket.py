@@ -102,15 +102,18 @@ async def websocket_endpoint(
             #         await websocket.send_json({"error": str(e)})
             # else:
             current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            
-            await manager.broadcast(f"{data['message']}",
-                                    
-                                    rooms=rooms,
-                                    created_at=current_time,
-                                    receiver_id=user.id,
-                                    user_name=user.user_name,
-                                    avatar=user.avatar,
-                                    add_to_db=True)
+            if 'type' in data:
+                await manager.notify_users_typing(rooms, user.user_name, user.id)
+                
+            else:  
+                await manager.broadcast(f"{data['message']}",
+                                        
+                                        rooms=rooms,
+                                        created_at=current_time,
+                                        receiver_id=user.id,
+                                        user_name=user.user_name,
+                                        avatar=user.avatar,
+                                        add_to_db=True)
                 
             
     except WebSocketDisconnect:
