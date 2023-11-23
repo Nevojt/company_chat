@@ -110,7 +110,6 @@ async def websocket_endpoint(
                                     receiver_id=user.id,
                                     user_name=user.user_name,
                                     avatar=user.avatar,
-
                                     add_to_db=True)
                 
             
@@ -126,7 +125,6 @@ async def websocket_endpoint(
                                 receiver_id=user.id,
                                 user_name=user.user_name,
                                 avatar=user.avatar,
-                                
                                 add_to_db=False)
 
 
@@ -175,7 +173,7 @@ async def process_vote(vote: schemas.Vote, session: AsyncSession, current_user: 
 
 
 
-@router.get('/ws/{rooms}/users')
-async def active_users(rooms: str):
-    active_users = [{"user_id": user_id, "user_name": user_info[1], "avatar": user_info[2]} for user_id, user_info in manager.user_connections.items()]
-    return {"rooms": rooms, "active_users": active_users}
+# @router.get('/ws/{rooms}/users')
+# async def active_users(rooms: str):
+#     active_users = [{"user_id": user_id, "user_name": user_info[1], "avatar": user_info[2]} for user_id, user_info in manager.user_connections.items()]
+#     return {"rooms": rooms, "active_users": active_users}
