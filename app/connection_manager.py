@@ -105,7 +105,7 @@ class ConnectionManager:
         except for the user who is typing.
         """
         message_data = {"type": f"User {user_name} is typing"}
-        for websocket, user_id, _, user_room in self.user_connections.values():
+ 
+        for user_id, (connection, _, _, user_room) in self.user_connections.items():
             if user_room == room and user_id != typing_user_id:
-                await websocket.send_json(message_data)
-            
+                await connection.send_json(message_data)

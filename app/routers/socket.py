@@ -5,7 +5,7 @@ from app.database import get_async_session
 from app import models, schemas, oauth2
 from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import asc, func, desc
+from sqlalchemy import func, desc
 from typing import List
 
 router = APIRouter(
@@ -102,9 +102,9 @@ async def websocket_endpoint(
             #         await websocket.send_json({"error": str(e)})
             # else:
             current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            if 'type' in data:
+            if 'type' in data:   
                 await manager.notify_users_typing(rooms, user.user_name, user.id)
-                
+                    
             else:  
                 await manager.broadcast(f"{data['message']}",
                                         
