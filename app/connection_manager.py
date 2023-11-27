@@ -104,7 +104,7 @@ class ConnectionManager:
         Sends a message to all active WebSocket connections in a specific room 
         except for the user who is typing.
         """
-        message_data = {"type": f"User {user_name} is typing"}
+        message_data = {"type": user_name}
  
         for user_id, (connection, _, _, user_room) in self.user_connections.items():
             if user_room == room and user_id != typing_user_id:
