@@ -109,3 +109,6 @@ class ConnectionManager:
         for user_id, (connection, _, _, user_room) in self.user_connections.items():
             if user_room == room and user_id != typing_user_id:
                 await connection.send_json(message_data)
+
+    
+    

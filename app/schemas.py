@@ -29,6 +29,7 @@ class SocketModel(BaseModel):
     
     class Config:
         from_attributes = True
+
         
         
 # class UserCreate(BaseModel):
