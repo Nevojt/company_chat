@@ -47,6 +47,7 @@ class ConnectionManager:
         """
         current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         message_id = None
+        vote_count = 0
 
         if add_to_db:
             message_id = await self.add_messages_to_database(message, rooms, receiver_id)
@@ -58,7 +59,9 @@ class ConnectionManager:
             "id": message_id,
             "message": message,
             "user_name": user_name,
-            "avatar": avatar,         
+            "avatar": avatar,
+            "vote": vote_count
+                
         }
 
         message_json = json.dumps(message_data, ensure_ascii=False)

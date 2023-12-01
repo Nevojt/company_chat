@@ -3,9 +3,10 @@ from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends
 from app.connection_manager import ConnectionManager
 from app.database import get_async_session
 from app import oauth2
+from .. import schemas
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from .func_socket import fetch_last_messages, update_room_for_user, update_room_for_user_live
+from .func_socket import fetch_last_messages, update_room_for_user, update_room_for_user_live, process_vote
 
 router = APIRouter(
     tags=["Chat"]
@@ -50,25 +51,26 @@ async def websocket_endpoint(
         while True:
             data = await websocket.receive_json()
             
-            # if 'vote' in data:
-            #     try:
-            #         vote_data = schemas.Vote(**data['vote'])
-            #         await process_vote(vote_data, session, user)
+            if 'vote' in data:
+                try:
+                    vote_data = schemas.Vote(**data['vote'])
+                    await process_vote(vote_data, session, user)
                     
-            #         messages = await fetch_last_messages(rooms, session)
-            #         for message in messages:
+                    messages = await fetch_last_messages(rooms, session)
+                    for message in messages:
                     
-            #             for connection in manager.active_connections:
-            #                 await connection.send_text(message.model_dump_json())
+                        for connection in manager.active_connections:
+                            await connection.send_text(message.model_dump_json())
 
-            #     except Exception as e:
-            #         await websocket.send_json({"error": str(e)})
-            # else:
-            current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            if 'type' in data:   
+                except Exception as e:
+                    await websocket.send_json({"message": "This message already has like"})
+            
+            
+            elif 'type' in data:   
                 await manager.notify_users_typing(rooms, user.user_name, user.id)
                     
-            else:  
+            else:
+                current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")  
                 await manager.broadcast(f"{data['message']}",
                                         
                                         rooms=rooms,

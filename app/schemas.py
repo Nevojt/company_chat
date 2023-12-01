@@ -25,7 +25,7 @@ class SocketModel(BaseModel):
     message: str
     user_name: str
     avatar: str
-    # vote: int
+    vote: int
     
     class Config:
         from_attributes = True
