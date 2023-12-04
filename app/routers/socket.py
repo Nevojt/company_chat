@@ -59,10 +59,12 @@ async def websocket_endpoint(
                     messages = await fetch_last_messages(room, session)
                     
                     for user_id, (connection, _, _, user_room) in manager.user_connections.items():
+                        await connection.send_json({"message": "Vote posted "})
                         if user_room == room:
                             for message in messages:
+                                
                                 await connection.send_text(message.model_dump_json())
-
+                                
 
                 except Exception as e:
                     # Переконайтеся, що ви використовуєте початковий об'єкт WebSocket для відправлення повідомлення про помилку
