@@ -12,7 +12,6 @@ from typing import List, Dict, Tuple
 
 
 
-
 class ConnectionManager:
     def __init__(self):
         # List to store active WebSocket connections
@@ -69,7 +68,7 @@ class ConnectionManager:
         # Send the message only to users in the specified room
         for user_id, (connection, _, _, user_room) in self.user_connections.items():
             if user_room == rooms:
-                await connection.send_text(message_json)
+                await connection.send_text(message_json)   
 
     @staticmethod
     async def add_messages_to_database(message: str, rooms: str, receiver_id: int):
