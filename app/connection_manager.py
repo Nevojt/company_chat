@@ -62,7 +62,9 @@ class ConnectionManager:
         
 
 
-    async def broadcast(self, message: str, rooms: str, receiver_id: int, user_name: str, avatar: str, created_at: str, add_to_db: bool):
+    async def broadcast(self, message: str, rooms: str, receiver_id: int, 
+                        user_name: str, avatar: str, created_at: str, id_message: int,
+                        add_to_db: bool):
         """
         Sends a message to all active WebSocket connections. If `add_to_db` is True, it also
         adds the message to the database.
@@ -82,7 +84,8 @@ class ConnectionManager:
             "message": message,
             "user_name": user_name,
             "avatar": avatar,
-            "vote": vote_count
+            "vote": vote_count,
+            "id_message": id_message
                 
         }
 

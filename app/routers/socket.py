@@ -1,4 +1,5 @@
 from datetime import datetime
+import json
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends
 from app.connection_manager import ConnectionManager
 from app.database import get_async_session
@@ -74,31 +75,30 @@ async def websocket_endpoint(
                 original_message_id = reply_data['original_message_id']
                 reply_message = reply_data['message']
 
-                # Додавання відповіді до бази даних 
-                await manager.add_reply_to_database(user.id, room, original_message_id, reply_message, session)
-                
-                # Отримання оновлених повідомлень
-                messages = await fetch_last_messages(room, session)
-                for user_id, (connection, _, _, user_room) in manager.user_connections.items():
-                    await connection.send_json({"message": "Reload"})
-                    if user_room == room:
-                        for message in messages:
-                            await connection.send_text(message.model_dump_json())
+                # await websocket.send_json({"message": "Reload"})
+                current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                await manager.broadcast(
+                                    message=reply_message,
+                                    rooms=room,
+                                    created_at=current_time,
+                                    receiver_id=user.id,
+                                    user_name=user.user_name,
+                                    avatar=user.avatar,
+                                    id_message=original_message_id,
+                                    add_to_db=True) 
 
-            
-            
             elif 'type' in data:   
                 await manager.notify_users_typing(room, user.user_name, user.id)
                     
             else:
                 current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")  
                 await manager.broadcast(f"{data['message']}",
-                                        
                                         rooms=room,
                                         created_at=current_time,
                                         receiver_id=user.id,
                                         user_name=user.user_name,
                                         avatar=user.avatar,
+                                        id_message=None,
                                         add_to_db=True)
                 
             
