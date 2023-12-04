@@ -74,7 +74,7 @@ class ConnectionManager:
         vote_count = 0
 
         if add_to_db:
-            message_id = await self.add_messages_to_database(message, rooms, receiver_id, id_message)
+            message_id = await self.add_messages_to_database(message, rooms, receiver_id)
 
         message_data = {
             
@@ -97,12 +97,12 @@ class ConnectionManager:
                 await connection.send_text(message_json)   
 
     @staticmethod
-    async def add_messages_to_database(message: str, rooms: str, receiver_id: int, id_message: int):
+    async def add_messages_to_database(message: str, rooms: str, receiver_id: int ):
         """
         Adds a message to the database asynchronously.
         """
         async with async_session_maker() as session:
-            stmt = insert(models.Socket).values(message=message, rooms=rooms, receiver_id=receiver_id, id_message=id_message)
+            stmt = insert(models.Socket).values(message=message, rooms=rooms, receiver_id=receiver_id)
             result =  await session.execute(stmt)
             await session.commit()
             
