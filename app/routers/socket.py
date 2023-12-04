@@ -76,7 +76,7 @@ async def websocket_endpoint(
                 current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")  
                 await manager.broadcast(f"{data['message']}",
                                         
-                                        room=room,
+                                        rooms=room,
                                         created_at=current_time,
                                         receiver_id=user.id,
                                         user_name=user.user_name,
@@ -92,7 +92,7 @@ async def websocket_endpoint(
         
         current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         await manager.broadcast(f"Користувач -> {user.user_name} пішов з чату {room}",
-                                room=room,
+                                rooms=room,
                                 created_at=current_time,
                                 receiver_id=user.id,
                                 user_name=user.user_name,
