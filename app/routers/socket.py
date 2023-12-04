@@ -115,6 +115,7 @@ async def websocket_endpoint(
                                 receiver_id=user.id,
                                 user_name=user.user_name,
                                 avatar=user.avatar,
+                                id_message=None,
                                 add_to_db=False)
         
         
