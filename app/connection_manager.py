@@ -37,6 +37,29 @@ class ConnectionManager:
         self.active_connections.remove(websocket)
         self.user_connections.pop(user_id, None)
         
+    async def add_reply_to_database(self, user_id: int, room: str, reply_to_message_id: int, reply_message: str, session):
+        """
+        Adds a reply message to the database asynchronously.
+        """
+        try:
+            # Якщо транзакція вже активна, просто додаємо повідомлення без початку нової транзакції
+            new_reply = models.Socket(
+                message=reply_message,
+                receiver_id=user_id,
+                rooms=room,
+                id_return=reply_to_message_id
+            )
+            session.add(new_reply)
+            await session.commit()
+
+        except Exception as e:
+            # Обробка можливих винятків
+            await session.rollback()
+            raise
+
+        return new_reply.id
+
+        
 
 
     async def broadcast(self, message: str, rooms: str, receiver_id: int, user_name: str, avatar: str, created_at: str, add_to_db: bool):

@@ -44,7 +44,8 @@ async def fetch_last_messages(rooms: str, session: AsyncSession) -> List[schemas
             user_name=user.user_name,
             avatar=user.avatar,
             id=socket.id,
-            vote=votes   # Додавання кількості голосів
+            vote=votes, # Додавання кількості голосів
+            id_return=socket.id_return
         )
         for socket, user, votes in raw_messages
     ]

@@ -66,8 +66,25 @@ async def websocket_endpoint(
                                 
 
                 except Exception as e:
-                    # Переконайтеся, що ви використовуєте початковий об'єкт WebSocket для відправлення повідомлення про помилку
                     await websocket.send_json({"message": f"Error processing vote: {e}"})
+                    
+            elif 'reply' in data:
+                # Обробка відповіді на повідомлення
+                reply_data = data['reply']
+                original_message_id = reply_data['original_message_id']
+                reply_message = reply_data['message']
+
+                # Додавання відповіді до бази даних 
+                await manager.add_reply_to_database(user.id, room, original_message_id, reply_message, session)
+                
+                # Отримання оновлених повідомлень
+                messages = await fetch_last_messages(room, session)
+                for user_id, (connection, _, _, user_room) in manager.user_connections.items():
+                    await connection.send_json({"message": "Reply posted "})
+                    if user_room == room:
+                        for message in messages:
+                            await connection.send_text(message.model_dump_json())
+
             
             
             elif 'type' in data:   
