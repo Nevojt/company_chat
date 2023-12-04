@@ -62,7 +62,6 @@ async def websocket_endpoint(
                         await connection.send_json({"message": "Vote posted "})
                         if user_room == room:
                             for message in messages:
-                                
                                 await connection.send_text(message.model_dump_json())
                                 
 
