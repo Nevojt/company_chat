@@ -28,7 +28,7 @@ async def websocket_endpoint(
     
     user = await oauth2.get_current_user(token, session)
 
-    await manager.connect(websocket, user.id, user.user_name, user.avatar, room)
+    await manager.connect(websocket, user.id, user.user_name, user.avatar, room, user.verified)
     
     await update_room_for_user(user.id, room, session)
     
@@ -84,6 +84,7 @@ async def websocket_endpoint(
                                     receiver_id=user.id,
                                     user_name=user.user_name,
                                     avatar=user.avatar,
+                                    verified=user.verified,
                                     id_message=original_message_id,
                                     add_to_db=True) 
 
@@ -98,6 +99,7 @@ async def websocket_endpoint(
                                         receiver_id=user.id,
                                         user_name=user.user_name,
                                         avatar=user.avatar,
+                                        verified=user.verified,
                                         id_message=None,
                                         add_to_db=True)
                 
@@ -115,6 +117,7 @@ async def websocket_endpoint(
                                 receiver_id=user.id,
                                 user_name=user.user_name,
                                 avatar=user.avatar,
+                                verified=user.verified,
                                 id_message=None,
                                 add_to_db=False)
         

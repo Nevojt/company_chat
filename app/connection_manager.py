@@ -18,16 +18,16 @@ class ConnectionManager:
         self.active_connections: List[WebSocket] = []
         
         # Dictionary to map user IDs to their WebSocket connection, username, and avatar
-        self.user_connections: Dict[int, Tuple[WebSocket, str, str, str]] = {}
+        self.user_connections: Dict[int, Tuple[WebSocket, str, str, str, bool]] = {}
 
-    async def connect(self, websocket: WebSocket, user_id: int, user_name: str, avatar: str, room: str):
+    async def connect(self, websocket: WebSocket, user_id: int, user_name: str, avatar: str, room: str, verified: bool):
         """
         Accepts a new WebSocket connection and stores it in the list of active connections
         and the dictionary of user connections.
         """
         await websocket.accept()
         self.active_connections.append(websocket)
-        self.user_connections[user_id] = (websocket, user_name, avatar, room)
+        self.user_connections[user_id] = (websocket, user_name, avatar, room, verified)
 
     def disconnect(self, websocket: WebSocket, user_id: int):
         """
@@ -63,8 +63,8 @@ class ConnectionManager:
 
 
     async def broadcast(self, message: str, rooms: str, receiver_id: int, 
-                        user_name: str, avatar: str, created_at: str, id_message: int,
-                        add_to_db: bool):
+                        user_name: str, avatar: str, created_at: str, 
+                        id_message: int, verified: bool, add_to_db: bool):
         """
         Sends a message to all active WebSocket connections. If `add_to_db` is True, it also
         adds the message to the database.
@@ -83,6 +83,7 @@ class ConnectionManager:
             "id": message_id,
             "message": message,
             "user_name": user_name,
+            "verified": verified,
             "avatar": avatar,
             "vote": vote_count,
             "id_message": id_message
@@ -92,7 +93,7 @@ class ConnectionManager:
         message_json = json.dumps(message_data, ensure_ascii=False)
 
         # Send the message only to users in the specified room
-        for user_id, (connection, _, _, user_room) in self.user_connections.items():
+        for user_id, (connection, _, _, user_room, _) in self.user_connections.items():
             if user_room == rooms:
                 await connection.send_text(message_json)   
 
@@ -115,14 +116,14 @@ class ConnectionManager:
             Sends the list of active users in a specific room to all connected WebSocket clients in that room.
             """
             active_users = [
-                {"user_id": user_id, "user_name": user_info[1], "avatar": user_info[2]}
+                {"user_id": user_id, "user_name": user_info[1], "avatar": user_info[2], "verified": user_info[4]}
                 for user_id, user_info in self.user_connections.items()
                 if user_info[3] == room  # Check if the user is in the specified room
             ]
             message_data = {"type": "active_users", "data": active_users}
 
             # Send the message only to users in the specified room
-            for websocket, _, _, user_room in self.user_connections.values():
+            for websocket, _, _, user_room, _ in self.user_connections.values():
                 if user_room == room:
                     await websocket.send_json(message_data)
                     
@@ -134,7 +135,7 @@ class ConnectionManager:
         """
         message_data = {"type": user_name}
  
-        for user_id, (connection, _, _, user_room) in self.user_connections.items():
+        for user_id, (connection, _, _, user_room, _) in self.user_connections.items():
             if user_room == room and user_id != typing_user_id:
                 await connection.send_json(message_data)
 

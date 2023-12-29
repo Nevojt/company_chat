@@ -25,6 +25,7 @@ class SocketModel(BaseModel):
     message: str
     user_name: str
     avatar: str
+    verified: bool
     vote: int
     id_return: Optional[int] = None 
     
