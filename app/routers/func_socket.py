@@ -74,9 +74,9 @@ async def update_room_for_user(user_id: int, room: str, session: AsyncSession):
         post.name_room = room  # Оновлення поля з назвою кімнати
         await session.commit()
 
-        logging.info(f"User status updated for user_id {user_id} with room {room}")
         return post
     except Exception as e:
+        logging.error(f"Update user failed with error {e}")
         logging.error(f"Error updating user status: {e}")
         raise
     
@@ -96,7 +96,6 @@ async def update_room_for_user_live(user_id: int, session: AsyncSession):
         post.name_room = 'Hell'  # Оновлення поля з назвою кімнати
         await session.commit()
 
-        logging.info(f"User status updated for user_id {user_id} with room")
         return post
     except Exception as e:
         logging.error(f"Error updating user status: {e}")

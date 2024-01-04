@@ -1,5 +1,6 @@
 from datetime import datetime
 import json
+import logging
 from fastapi import WebSocket
 from app.database import async_session_maker
 from app import models
@@ -7,7 +8,8 @@ from sqlalchemy import insert
 from typing import List, Dict, Tuple
 
 
-
+logging.basicConfig(filename='log/connect_manager.log', format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 
 
@@ -54,6 +56,7 @@ class ConnectionManager:
 
         except Exception as e:
             # Обробка можливих винятків
+            logging.error(f"Error creating message to database, {e}")
             await session.rollback()
             raise
 

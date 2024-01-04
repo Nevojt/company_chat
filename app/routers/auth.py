@@ -1,3 +1,4 @@
+import logging
 from fastapi import APIRouter, Depends, status, HTTPException, Response
 from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
@@ -6,6 +7,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
 from .. import database, schemas, models, utils, oauth2
+
+logging.basicConfig(filename='log/authentication.log', format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=['Authentication'])
 
@@ -46,7 +50,8 @@ async def login(user_credentials: OAuth2PasswordRequestForm = Depends(), db: Asy
 
         # Return the token
         return {"access_token": access_token, "token_type": "bearer"}
-    except HTTPException:
+    except HTTPException as exc_info:
+        logging.error(f"Error login user {exc_info}")
         # Re-raise HTTPExceptions without modification
         raise
     except Exception as e:
