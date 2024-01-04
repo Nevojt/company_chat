@@ -1,0 +1,20 @@
+2024-01-04 19:47:13,509 - ERROR - HTTP error occurred: Message with id: 884 does not exist
+2024-01-04 19:47:13,509 - ERROR - Error processing vote: 
+Traceback (most recent call last):
+  File "/home/dmytro/project/chat/app/routers/socket.py", line 63, in websocket_endpoint
+    await process_vote(vote_data, session, user)
+  File "/home/dmytro/project/chat/app/routers/func_socket.py", line 146, in process_vote
+    raise http_exc
+  File "/home/dmytro/project/chat/app/routers/func_socket.py", line 114, in process_vote
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+fastapi.exceptions.HTTPException
+2024-01-04 19:47:46,693 - ERROR - HTTP error occurred: Message with id: 884 does not exist
+2024-01-04 19:47:46,693 - ERROR - Error processing vote: 
+Traceback (most recent call last):
+  File "/home/dmytro/project/chat/app/routers/socket.py", line 63, in websocket_endpoint
+    await process_vote(vote_data, session, user)
+  File "/home/dmytro/project/chat/app/routers/func_socket.py", line 146, in process_vote
+    raise http_exc
+  File "/home/dmytro/project/chat/app/routers/func_socket.py", line 114, in process_vote
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+fastapi.exceptions.HTTPException
