@@ -8,6 +8,9 @@ from sqlalchemy import func, desc
 from typing import List
 
 
+# Налаштування логування
+logging.basicConfig(filename='log/func_vote.log', format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 
 
@@ -102,38 +105,48 @@ async def update_room_for_user_live(user_id: int, session: AsyncSession):
 
 
 async def process_vote(vote: schemas.Vote, session: AsyncSession, current_user: models.User):
-    
-    # Виконання запиту і отримання першого результату
-    result = await session.execute(select(models.Socket).filter(models.Socket.id == vote.message_id))
-    message = result.scalars().first()
-    
-    if not message:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail=f"Message with id: {vote.message_id} does not exist")
-    
-    # Перевірка наявності голосу
-    vote_result = await session.execute(select(models.Vote).filter(
-        models.Vote.message_id == vote.message_id, 
-        models.Vote.user_id == current_user.id
-    ))
-    found_vote = vote_result.scalars().first()
-    
-    if vote.dir == 1:
-        if found_vote:
-            raise HTTPException(status_code=status.HTTP_409_CONFLICT,
-                                detail=f"User {current_user.id} has already voted on post {vote.message_id}")
-            
-        new_vote = models.Vote(message_id=vote.message_id, user_id=current_user.id, dir=vote.dir)
-        session.add(new_vote)
-        await session.commit()
-        return {"message": "Successfully added vote"}
-
-    else:
-        if not found_vote:
+    try:
+        # Виконання запиту і отримання першого результату
+        result = await session.execute(select(models.Socket).filter(models.Socket.id == vote.message_id))
+        message = result.scalars().first()
+        
+        if not message:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                                detail="Vote does not exist")
+                                detail=f"Message with id: {vote.message_id} does not exist")
         
-        await session.delete(found_vote)
-        await session.commit()
+        # Перевірка наявності голосу
+        vote_result = await session.execute(select(models.Vote).filter(
+            models.Vote.message_id == vote.message_id, 
+            models.Vote.user_id == current_user.id
+        ))
+        found_vote = vote_result.scalars().first()
         
-        return {"message" : "Successfully deleted vote"}
+        if vote.dir == 1:
+            if found_vote:
+                return {"message": f"User {current_user.id} has already voted on post {vote.message_id}"}
+                
+            new_vote = models.Vote(message_id=vote.message_id, user_id=current_user.id, dir=vote.dir)
+            session.add(new_vote)
+            await session.commit()
+            return {"message": "Successfully added vote"}
+
+        else:
+            if not found_vote:
+                return {"message": "Vote does not exist or has already been removed"}
+            
+            await session.delete(found_vote)
+            await session.commit()
+            
+            return {"message" : "Successfully deleted vote"}
+
+    except HTTPException as http_exc:
+        # Логування помилки
+        logging.error(f"HTTP error occurred: {http_exc.detail}")
+        # Перекидання помилки далі
+        raise http_exc
+    except Exception as e:
+        # Логування неочікуваних помилок
+        logging.error(f"Unexpected error: {e}", exc_info=True)
+        # Відправлення загального повідомлення про помилку
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                            detail="An unexpected error occurred")

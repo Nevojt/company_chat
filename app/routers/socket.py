@@ -1,4 +1,5 @@
 from datetime import datetime
+import logging
 import json
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends
 from app.connection_manager import ConnectionManager
@@ -8,6 +9,10 @@ from .. import schemas
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .func_socket import fetch_last_messages, update_room_for_user, update_room_for_user_live, process_vote
+
+# Налаштування логування
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 router = APIRouter(
     tags=["Chat"]
@@ -56,10 +61,10 @@ async def websocket_endpoint(
                 try:
                     vote_data = schemas.Vote(**data['vote'])
                     await process_vote(vote_data, session, user)
-                    
+                 
                     messages = await fetch_last_messages(room, session)
                     
-                    for user_id, (connection, _, _, user_room) in manager.user_connections.items():
+                    for user_id, (connection, _, _, user_room, _) in manager.user_connections.items():
                         await connection.send_json({"message": "Vote posted "})
                         if user_room == room:
                             for message in messages:
@@ -67,6 +72,7 @@ async def websocket_endpoint(
                                 
 
                 except Exception as e:
+                    logger.error(f"Error processing vote: {e}", exc_info=True)  # Запис помилки
                     await websocket.send_json({"message": f"Error processing vote: {e}"})
                     
             elif 'reply' in data:
