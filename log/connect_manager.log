@@ -1,0 +1,14 @@
+2024-01-14 16:37:34,063 - ERROR - Error processing vote: 'SocketUpdate' object has no attribute 'id'
+Traceback (most recent call last):
+  File "/home/dmytro/project/chat/app/routers/socket.py", line 81, in websocket_endpoint
+    await change_message(message_data.id, message_data, session, user)
+  File "/home/dmytro/project/chat/venv/lib/python3.10/site-packages/pydantic/main.py", line 759, in __getattr__
+    raise AttributeError(f'{type(self).__name__!r} object has no attribute {item!r}')
+AttributeError: 'SocketUpdate' object has no attribute 'id'
+2024-01-14 16:39:01,201 - ERROR - Error processing vote: 
+Traceback (most recent call last):
+  File "/home/dmytro/project/chat/app/routers/socket.py", line 81, in websocket_endpoint
+    await change_message(message_data.id, message_data, session, user)
+  File "/home/dmytro/project/chat/app/routers/func_socket.py", line 175, in change_message
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Message not found or you don't have permission to edit this message")
+fastapi.exceptions.HTTPException

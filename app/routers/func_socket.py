@@ -19,6 +19,16 @@ logger = logging.getLogger(__name__)
 
 
 async def fetch_last_messages(rooms: str, session: AsyncSession) -> List[schemas.SocketModel]:
+    """
+    This function fetches the last 50 messages in a given room and returns them as a list of SocketModel objects.
+
+    Parameters:
+    rooms (str): The name of the room to fetch messages from.
+    session (AsyncSession): The database session to use for querying the database.
+
+    Returns:
+    List[schemas.SocketModel]: A list of SocketModel objects representing the last 50 messages in the room.
+    """
     query = select(
         models.Socket, 
         models.User, 
@@ -149,3 +159,24 @@ async def process_vote(vote: schemas.Vote, session: AsyncSession, current_user: 
         # Відправлення загального повідомлення про помилку
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                             detail="An unexpected error occurred")
+        
+        
+        
+async def change_message(id_message: int, message_update: schemas.SocketUpdate,
+                         session: AsyncSession, 
+                         current_user: models.User):
+    
+    
+    query = select(models.Socket).where(models.Socket.id == id_message, models.Socket.receiver_id == current_user.id)
+    result = await session.execute(query)
+    message = result.scalar()
+
+    if message is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Message not found or you don't have permission to edit this message")
+
+    # Оновлення повідомлення
+    message.message = message_update.message
+    session.add(message)
+    await session.commit()
+
+    return {"message": "Message updated successfully"}

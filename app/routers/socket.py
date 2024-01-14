@@ -8,7 +8,7 @@ from app import oauth2
 from .. import schemas
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from .func_socket import fetch_last_messages, update_room_for_user, update_room_for_user_live, process_vote
+from .func_socket import change_message, fetch_last_messages, update_room_for_user, update_room_for_user_live, process_vote
 
 # Налаштування логування
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -57,6 +57,7 @@ async def websocket_endpoint(
         while True:
             data = await websocket.receive_json()
             
+            # Created likes
             if 'vote' in data:
                 try:
                     vote_data = schemas.Vote(**data['vote'])
@@ -75,6 +76,25 @@ async def websocket_endpoint(
                     logger.error(f"Error processing vote: {e}", exc_info=True)  # Запис помилки
                     await websocket.send_json({"message": f"Error processing vote: {e}"})
                     
+            # Block change message 
+            elif 'change_message' in data:
+                try:
+                    message_data = schemas.SocketUpdate(**data['change_message'])
+                    await change_message(message_data.id, message_data, session, user)
+                    
+                    messages = await fetch_last_messages(room, session)
+                    
+                    for user_id, (connection, _, _, user_room, _) in manager.user_connections.items():
+                        await connection.send_json({"message": "Message updated "})
+                        if user_room == room:
+                            for message in messages:
+                                await connection.send_text(message.model_dump_json())
+                                
+                except Exception as e:
+                    logger.error(f"Error processing vote: {e}", exc_info=True)  # Запис помилки
+                    await websocket.send_json({"message": f"Error processing change: {e}"})
+                    
+            # Block reply message     
             elif 'reply' in data:
                 # Обробка відповіді на повідомлення
                 reply_data = data['reply']
@@ -93,10 +113,11 @@ async def websocket_endpoint(
                                     verified=user.verified,
                                     id_message=original_message_id,
                                     add_to_db=True) 
-
+            # Blok following typing message
             elif 'type' in data:   
                 await manager.notify_users_typing(room, user.user_name, user.id)
-                    
+            
+            # Block send message     
             else:
                 current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")  
                 await manager.broadcast(f"{data['message']}",
