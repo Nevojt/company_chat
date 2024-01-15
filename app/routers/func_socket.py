@@ -1,6 +1,6 @@
 
 import logging
-from fastapi import HTTPException, status
+from fastapi import HTTPException, Response, status
 from app import models, schemas
 from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -180,3 +180,22 @@ async def change_message(id_message: int, message_update: schemas.SocketUpdate,
     await session.commit()
 
     return {"message": "Message updated successfully"}
+
+
+async def delete_message(id_message: int,
+                         session: AsyncSession, 
+                         current_user: models.User):
+    
+    
+    query = select(models.Socket).where(models.Socket.id == id_message, models.Socket.receiver_id == current_user.id)
+    result = await session.execute(query)
+    message = result.scalar()
+
+    if message is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Message not found or you don't have permission to delete this message")
+
+    # Оновлення повідомлення
+    await session.delete(message)
+    await session.commit()
+
+    return {"message": "Message deleted successfully"}

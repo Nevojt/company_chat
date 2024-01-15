@@ -8,7 +8,7 @@ from app import oauth2
 from .. import schemas
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from .func_socket import change_message, fetch_last_messages, update_room_for_user, update_room_for_user_live, process_vote
+from .func_socket import change_message, fetch_last_messages, update_room_for_user, update_room_for_user_live, process_vote, delete_message
 
 # Налаштування логування
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -86,6 +86,23 @@ async def websocket_endpoint(
                     
                     for user_id, (connection, _, _, user_room, _) in manager.user_connections.items():
                         await connection.send_json({"message": "Message updated "})
+                        if user_room == room:
+                            for message in messages:
+                                await connection.send_text(message.model_dump_json())
+                                
+                except Exception as e:
+                    logger.error(f"Error processing vote: {e}", exc_info=True)  # Запис помилки
+                    await websocket.send_json({"message": f"Error processing change: {e}"})
+                    
+            elif 'delete_message' in data:
+                try:
+                    message_data = schemas.SocketUpdate(**data['delete_message'])
+                    await delete_message(message_data.id, session, user)
+                    
+                    messages = await fetch_last_messages(room, session)
+                    
+                    for user_id, (connection, _, _, user_room, _) in manager.user_connections.items():
+                        await connection.send_json({"message": "Message delete "})
                         if user_room == room:
                             for message in messages:
                                 await connection.send_text(message.model_dump_json())
