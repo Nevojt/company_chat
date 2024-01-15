@@ -35,6 +35,9 @@ class SocketModel(BaseModel):
 class SocketUpdate(BaseModel):
     id: int
     message: str
+    
+class SocketDelete(BaseModel):
+    id: int
         
         
 # class UserCreate(BaseModel):

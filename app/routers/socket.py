@@ -96,7 +96,7 @@ async def websocket_endpoint(
                     
             elif 'delete_message' in data:
                 try:
-                    message_data = schemas.SocketUpdate(**data['delete_message'])
+                    message_data = schemas.SocketDelete(**data['delete_message'])
                     await delete_message(message_data.id, session, user)
                     
                     messages = await fetch_last_messages(room, session)
