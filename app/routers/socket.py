@@ -91,9 +91,10 @@ async def websocket_endpoint(
                                 await connection.send_text(message.model_dump_json())
                                 
                 except Exception as e:
-                    logger.error(f"Error processing vote: {e}", exc_info=True)  # Запис помилки
+                    logger.error(f"Error processing change: {e}", exc_info=True)  # Запис помилки
                     await websocket.send_json({"message": f"Error processing change: {e}"})
-                    
+            
+            # Block delete message       
             elif 'delete_message' in data:
                 try:
                     message_data = schemas.SocketDelete(**data['delete_message'])
@@ -102,14 +103,14 @@ async def websocket_endpoint(
                     messages = await fetch_last_messages(room, session)
                     
                     for user_id, (connection, _, _, user_room, _) in manager.user_connections.items():
-                        await connection.send_json({"message": "Message delete "})
+                        await connection.send_json({"message": "Message delete"})
                         if user_room == room:
                             for message in messages:
                                 await connection.send_text(message.model_dump_json())
                                 
                 except Exception as e:
-                    logger.error(f"Error processing vote: {e}", exc_info=True)  # Запис помилки
-                    await websocket.send_json({"message": f"Error processing change: {e}"})
+                    logger.error(f"Error processing delete: {e}", exc_info=True)  # Запис помилки
+                    await websocket.send_json({"message": f"Error processing deleted: {e}"})
                     
             # Block reply message     
             elif 'reply' in data:
@@ -130,6 +131,7 @@ async def websocket_endpoint(
                                     verified=user.verified,
                                     id_message=original_message_id,
                                     add_to_db=True) 
+                
             # Blok following typing message
             elif 'type' in data:   
                 await manager.notify_users_typing(room, user.user_name, user.id)
