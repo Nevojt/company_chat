@@ -129,7 +129,7 @@ async def websocket_endpoint(
                                     user_name=user.user_name,
                                     avatar=user.avatar,
                                     verified=user.verified,
-                                    id_message=original_message_id,
+                                    id_return=original_message_id,
                                     add_to_db=True) 
                 
             # Blok following typing message
@@ -146,7 +146,7 @@ async def websocket_endpoint(
                                         user_name=user.user_name,
                                         avatar=user.avatar,
                                         verified=user.verified,
-                                        id_message=None,
+                                        id_return=None,
                                         add_to_db=True)
                 
             
@@ -164,7 +164,7 @@ async def websocket_endpoint(
                                 user_name=user.user_name,
                                 avatar=user.avatar,
                                 verified=user.verified,
-                                id_message=None,
+                                id_return=None,
                                 add_to_db=False)
         
         

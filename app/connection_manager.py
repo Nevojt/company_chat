@@ -1,4 +1,5 @@
 from datetime import datetime
+import pytz
 import json
 import logging
 from fastapi import WebSocket
@@ -67,21 +68,27 @@ class ConnectionManager:
 
     async def broadcast(self, message: str, rooms: str, receiver_id: int, 
                         user_name: str, avatar: str, created_at: str, 
-                        id_message: int, verified: bool, add_to_db: bool):
+                        id_return: int, verified: bool, add_to_db: bool):
         """
         Sends a message to all active WebSocket connections. If `add_to_db` is True, it also
         adds the message to the database.
         """
-        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        
+
+        # Встановіть часовий пояс UTC
+        timezone = pytz.timezone('UTC')
+
+        # Отримайте поточний час у форматі ISO 8601 з UTC часовим поясом
+        current_time_utc = datetime.now(timezone).isoformat()
         message_id = None
         vote_count = 0
 
         if add_to_db:
-            message_id = await self.add_messages_to_database(message, rooms, receiver_id, id_message)
+            message_id = await self.add_messages_to_database(message, rooms, receiver_id, id_return)
 
         message_data = {
             
-            "created_at": current_time,
+            "created_at": current_time_utc,
             "receiver_id": receiver_id,
             "id": message_id,
             "message": message,
@@ -89,7 +96,7 @@ class ConnectionManager:
             "verified": verified,
             "avatar": avatar,
             "vote": vote_count,
-            "id_return": id_message
+            "id_return": id_return
                 
         }
 
