@@ -9,7 +9,7 @@ from sqlalchemy import insert
 from typing import List, Dict, Tuple
 
 
-logging.basicConfig(filename='log/connect_manager.log', format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(filename='_log/connect_manager.log', format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 

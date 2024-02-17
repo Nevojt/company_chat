@@ -9,7 +9,7 @@ from typing import List
 
 
 # Налаштування логування
-logging.basicConfig(filename='log/func_vote.log', format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(filename='_log/func_vote.log', format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 
@@ -58,7 +58,7 @@ async def fetch_last_messages(rooms: str, session: AsyncSession) -> List[schemas
             avatar=user.avatar,
             verified=user.verified,
             id=socket.id,
-            vote=votes, # Додавання кількості голосів
+            vote=votes, 
             id_return=socket.id_return
         )
         for socket, user, votes in raw_messages
@@ -70,6 +70,20 @@ async def fetch_last_messages(rooms: str, session: AsyncSession) -> List[schemas
 
 
 async def update_room_for_user(user_id: int, room: str, session: AsyncSession):
+    """
+    Update the room name for a specific user.
+
+    Args:
+        user_id (int): The user ID.
+        room (str): The room name.
+        session (AsyncSession): The database session.
+
+    Returns:
+        models.User_Status: The updated user status.
+
+    Raises:
+        HTTPException: If the user status cannot be found or updated.
+    """
     try:
         post_query = select(models.User_Status).where(models.User_Status.user_id == user_id)
         post_result = await session.execute(post_query)
@@ -81,7 +95,7 @@ async def update_room_for_user(user_id: int, room: str, session: AsyncSession):
                 detail=f"User status with user_id: {user_id} not found"
             )
 
-        post.name_room = room  # Оновлення поля з назвою кімнати
+        post.name_room = room  
         await session.commit()
 
         return post
@@ -92,6 +106,19 @@ async def update_room_for_user(user_id: int, room: str, session: AsyncSession):
     
     
 async def update_room_for_user_live(user_id: int, session: AsyncSession):
+    """
+    Update the room name for a specific user.
+
+    Args:
+        user_id (int): The user ID.
+        session (AsyncSession): The database session.
+
+    Returns:
+        models.User_Status: The updated user status.
+
+    Raises:
+        HTTPException: If the user status cannot be found or updated.
+    """
     try:
         post_query = select(models.User_Status).where(models.User_Status.user_id == user_id)
         post_result = await session.execute(post_query)
@@ -103,7 +130,7 @@ async def update_room_for_user_live(user_id: int, session: AsyncSession):
                 detail=f"User status with user_id: {user_id} not found"
             )
 
-        post.name_room = 'Hell'  # Оновлення поля з назвою кімнати
+        post.name_room = 'Hell' 
         await session.commit()
 
         return post
@@ -114,8 +141,21 @@ async def update_room_for_user_live(user_id: int, session: AsyncSession):
 
 
 async def process_vote(vote: schemas.Vote, session: AsyncSession, current_user: models.User):
+    """
+    Process a vote submitted by a user.
+
+    Args:
+        vote (schemas.Vote): The vote submitted by the user.
+        session (AsyncSession): The database session.
+        current_user (models.User): The current user.
+
+    Returns:
+        Dict[str, Any]: A response indicating whether the vote was added or removed, and any errors that may have occurred.
+
+    Raises:
+        HTTPException: If an error occurs while processing the vote.
+    """
     try:
-        # Виконання запиту і отримання першого результату
         result = await session.execute(select(models.Socket).filter(models.Socket.id == vote.message_id))
         message = result.scalars().first()
         
@@ -123,7 +163,6 @@ async def process_vote(vote: schemas.Vote, session: AsyncSession, current_user: 
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                                 detail=f"Message with id: {vote.message_id} does not exist")
         
-        # Перевірка наявності голосу
         vote_result = await session.execute(select(models.Vote).filter(
             models.Vote.message_id == vote.message_id, 
             models.Vote.user_id == current_user.id
@@ -149,14 +188,11 @@ async def process_vote(vote: schemas.Vote, session: AsyncSession, current_user: 
             return {"message" : "Successfully deleted vote"}
 
     except HTTPException as http_exc:
-        # Логування помилки
         logging.error(f"HTTP error occurred: {http_exc.detail}")
-        # Перекидання помилки далі
         raise http_exc
+    
     except Exception as e:
-        # Логування неочікуваних помилок
         logging.error(f"Unexpected error: {e}", exc_info=True)
-        # Відправлення загального повідомлення про помилку
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                             detail="An unexpected error occurred")
         
@@ -165,7 +201,21 @@ async def process_vote(vote: schemas.Vote, session: AsyncSession, current_user: 
 async def change_message(id_message: int, message_update: schemas.SocketUpdate,
                          session: AsyncSession, 
                          current_user: models.User):
-    
+    """
+    This function updates a message in the database.
+
+    Parameters:
+        id_message (int): The ID of the message to update.
+        message_update (schemas.SocketUpdate): The updated message information.
+        session (AsyncSession): The database session.
+        current_user (models.User): The current user.
+
+    Returns:
+        Dict[str, Any]: A response indicating whether the message was updated and any errors that may have occurred.
+
+    Raises:
+        HTTPException: If an error occurs while updating the message.
+    """
     
     query = select(models.Socket).where(models.Socket.id == id_message, models.Socket.receiver_id == current_user.id)
     result = await session.execute(query)
@@ -174,7 +224,6 @@ async def change_message(id_message: int, message_update: schemas.SocketUpdate,
     if message is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Message not found or you don't have permission to edit this message")
 
-    # Оновлення повідомлення
     message.message = message_update.message
     session.add(message)
     await session.commit()
@@ -186,7 +235,20 @@ async def delete_message(id_message: int,
                          session: AsyncSession, 
                          current_user: models.User):
     
-    
+    """
+    Delete a message from the database.
+
+    Args:
+        id_message (int): The ID of the message to delete.
+        session (AsyncSession): The database session.
+        current_user (models.User): The current user.
+
+    Returns:
+        Dict[str, Any]: A response indicating whether the message was deleted and any errors that may have occurred.
+
+    Raises:
+        HTTPException: If an error occurs while deleting the message.
+    """
     query = select(models.Socket).where(models.Socket.id == id_message, models.Socket.receiver_id == current_user.id)
     result = await session.execute(query)
     message = result.scalar()
@@ -194,7 +256,6 @@ async def delete_message(id_message: int,
     if message is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Message not found or you don't have permission to delete this message")
 
-    # Оновлення повідомлення
     await session.delete(message)
     await session.commit()
 

@@ -1,8 +1,13 @@
-from sqlalchemy import Boolean, Column, Integer, String, ForeignKey
+from sqlalchemy import Boolean, Column, Integer, String, ForeignKey, Enum
 from sqlalchemy.sql.expression import text
 from sqlalchemy.sql.sqltypes import TIMESTAMP
+from enum import Enum as PythonEnum
 from .database import Base
 
+
+class UserRole(str, PythonEnum):
+	user = "user"
+	admin = "admin"
 
 class Socket(Base):
     __tablename__ = 'socket'
@@ -27,6 +32,7 @@ class User(Base):
     verified = Column(Boolean, nullable=False, server_default='false')
     token_verify = Column(String, nullable=True)
     refresh_token = Column(String, nullable=True)
+    role = Column(Enum(UserRole), default=UserRole.user)
     
 class User_Status(Base):
     __tablename__ = 'user_status' 
@@ -37,6 +43,7 @@ class User_Status(Base):
     user_name = Column(String, nullable=False)
     status = Column(Boolean, server_default='True', nullable=False)
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
+    
     
     
 class Rooms(Base):

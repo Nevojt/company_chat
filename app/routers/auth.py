@@ -8,7 +8,7 @@ from sqlalchemy.future import select
 
 from .. import database, schemas, models, utils, oauth2
 
-logging.basicConfig(filename='log/authentication.log', format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(filename='_log/authentication.log', format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=['Authentication'])
