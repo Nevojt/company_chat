@@ -171,12 +171,14 @@ async def process_vote(vote: schemas.Vote, session: AsyncSession, current_user: 
         
         if vote.dir == 1:
             if found_vote:
-                return {"message": f"User {current_user.id} has already voted on post {vote.message_id}"}
-                
-            new_vote = models.Vote(message_id=vote.message_id, user_id=current_user.id, dir=vote.dir)
-            session.add(new_vote)
-            await session.commit()
-            return {"message": "Successfully added vote"}
+                await session.delete(found_vote)
+                await session.commit()
+                return {"message": "Successfully removed vote"}
+            else:
+                new_vote = models.Vote(message_id=vote.message_id, user_id=current_user.id, dir=vote.dir)
+                session.add(new_vote)
+                await session.commit()
+                return {"message": "Successfully added vote"}
 
         else:
             if not found_vote:
@@ -184,8 +186,7 @@ async def process_vote(vote: schemas.Vote, session: AsyncSession, current_user: 
             
             await session.delete(found_vote)
             await session.commit()
-            
-            return {"message" : "Successfully deleted vote"}
+            return {"message": "Successfully deleted vote"}
 
     except HTTPException as http_exc:
         logging.error(f"HTTP error occurred: {http_exc.detail}")
@@ -195,6 +196,7 @@ async def process_vote(vote: schemas.Vote, session: AsyncSession, current_user: 
         logging.error(f"Unexpected error: {e}", exc_info=True)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                             detail="An unexpected error occurred")
+
         
         
         
