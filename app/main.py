@@ -7,7 +7,9 @@ from app import models
 
 models.Base.metadata.create_all(bind=engine)
 
-app = FastAPI()
+app = FastAPI(
+    docs_url="/docs"
+)
 
 origins = ["*"]
 
