@@ -8,7 +8,11 @@ from app import models
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
-    docs_url="/docs"
+    docs_url="/docs",
+    title="Chat",
+    version="0.1.0",
+    description="Chat API",
+    
 )
 
 origins = ["*"]
