@@ -1,6 +1,5 @@
 from datetime import datetime
 import logging
-import json
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends
 from app.connection_manager import ConnectionManager
 from app.database import get_async_session
