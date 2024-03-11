@@ -4,7 +4,7 @@ from fastapi import HTTPException, Response, status
 from app import models, schemas
 from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import func, desc
+from sqlalchemy import func, desc, update
 from typing import List
 
 
@@ -262,3 +262,22 @@ async def delete_message(id_message: int,
     await session.commit()
 
     return {"message": "Message deleted successfully"}
+
+
+
+async def online(session: AsyncSession, user_id: int):
+    online = await session.execute(select(models.User_Status).filter(models.User_Status.user_id == user_id, models.User_Status.status == True))
+    online = online.scalars().all()
+    return online
+
+async def update_user_status(session: AsyncSession, user_id: int, is_online: bool):
+    try:
+        await session.execute(
+            update(models.User_Status)
+            .where(models.User_Status.user_id == user_id)
+            .values(status=is_online)
+        )
+        await session.commit()
+        logger.info(f"User status updated for user {user_id}: {is_online}")
+    except Exception as e:
+        logger.error(f"Error updating user status for user {user_id}: {e}", exc_info=True)

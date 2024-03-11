@@ -1,13 +1,14 @@
 from datetime import datetime
 import logging
+from sqlalchemy import update
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends
 from app.connection_manager import ConnectionManager
 from app.database import get_async_session
 from app import oauth2
-from .. import schemas
+from .. import schemas, models
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from .func_socket import change_message, fetch_last_messages, update_room_for_user, update_room_for_user_live, process_vote, delete_message
+from .func_socket import update_user_status, change_message, fetch_last_messages, update_room_for_user, update_room_for_user_live, process_vote, delete_message
 
 # Налаштування логування
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -17,8 +18,6 @@ router = APIRouter(
     tags=["Chat"]
 )
 
-
-            
 manager = ConnectionManager()
 
 
@@ -47,7 +46,7 @@ async def websocket_endpoint(
     
     # Отримуємо останні повідомлення
     messages = await fetch_last_messages(room, session)
-
+    await update_user_status(session, user.id, True)
     # Відправляємо кожне повідомлення користувачеві
     for message in messages:  
         await websocket.send_text(message.model_dump_json()) 
@@ -150,6 +149,8 @@ async def websocket_endpoint(
                 
             
     except WebSocketDisconnect:
+        print("Couldn't connect to")
+        await update_user_status(session, user.id, False)
         manager.disconnect(websocket, user.id)
         await update_room_for_user_live(user.id, session)
         
