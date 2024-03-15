@@ -152,6 +152,7 @@ async def websocket_endpoint(
     except WebSocketDisconnect:
         print("Couldn't connect to")
         await update_user_status(session, user.id, False)
+        await update_room_for_user(user.id, 'Hell', session)
         manager.disconnect(websocket, user.id)
         await update_room_for_user_live(user.id, session)
         
