@@ -68,41 +68,44 @@ async def fetch_last_messages(rooms: str, session: AsyncSession) -> List[schemas
 
 
 
-
 async def update_room_for_user(user_id: int, room: str, session: AsyncSession):
-    """
-    Update the room name for a specific user.
-
-    Args:
-        user_id (int): The user ID.
-        room (str): The room name.
-        session (AsyncSession): The database session.
-
-    Returns:
-        models.User_Status: The updated user status.
-
-    Raises:
-        HTTPException: If the user status cannot be found or updated.
-    """
     try:
-        post_query = select(models.User_Status).where(models.User_Status.user_id == user_id)
-        post_result = await session.execute(post_query)
-        post = post_result.scalar()
+        # Отримати запис статусу користувача
+        user_status_query = select(models.User_Status).where(models.User_Status.user_id == user_id)
+        user_status_result = await session.execute(user_status_query)
+        user_status = user_status_result.scalar()
 
-        if post is None:
+        if user_status is None:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"User status with user_id: {user_id} not found"
             )
-
-        post.name_room = room  
+        
+        # Отримати ідентифікатор кімнати
+        room_query = select(models.Rooms).where(models.Rooms.name_room == room)
+        room_result = await session.execute(room_query)
+        room_record = room_result.scalar()
+        
+        if room_record is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Room with name: {room} not found"
+            )
+        
+        # Оновити дані статусу користувача
+        user_status.name_room = room
+        user_status.room_id = room_record.id
         await session.commit()
 
-        return post
+        return user_status
+    except HTTPException as http_error:
+        raise http_error
     except Exception as e:
         logging.error(f"Update user failed with error {e}")
-        logging.error(f"Error updating user status: {e}")
-        raise
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error"
+        )
     
     
 async def update_room_for_user_live(user_id: int, session: AsyncSession):

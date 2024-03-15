@@ -33,6 +33,7 @@ async def websocket_endpoint(
 
     await manager.connect(websocket, user.id, user.user_name, user.avatar, room, user.verified)
     
+      
     await update_room_for_user(user.id, room, session)
     
     x_real_ip = websocket.headers.get('x-real-ip')
