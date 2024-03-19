@@ -6,7 +6,13 @@ from sqlalchemy.orm import Session
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
-from .. import database, schemas, models, utils, oauth2
+from ..settings import database, oauth2
+
+from ..schemas import schemas
+
+from ..models import models
+
+from ..settings import utils
 
 logging.basicConfig(filename='_log/authentication.log', format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -37,7 +43,6 @@ async def login(user_credentials: OAuth2PasswordRequestForm = Depends(), db: Asy
     - Generates an access token using the user's ID.
     - Returns the access token and the token type as a JSON object.
     """
-    
 
     try:
         query = select(models.User).where(models.User.email == user_credentials.username)

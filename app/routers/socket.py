@@ -2,13 +2,14 @@ from datetime import datetime
 import logging
 from sqlalchemy import update
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends
-from app.connection_manager import ConnectionManager
-from app.database import get_async_session
-from app import oauth2
-from .. import schemas, models
+from app.settings.connection_manager import ConnectionManager
+from app.settings.database import get_async_session
+from app.settings import oauth2
+from app.models import models
+from ..schemas import schemas
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from .func_socket import update_user_status, change_message, fetch_last_messages, update_room_for_user, update_room_for_user_live, process_vote, delete_message
+from app.functions.func_socket import update_user_status, change_message, fetch_last_messages, update_room_for_user, update_room_for_user_live, process_vote, delete_message
 
 # Налаштування логування
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')

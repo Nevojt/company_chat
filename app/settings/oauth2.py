@@ -3,7 +3,11 @@ from jose import JWTError, jwt
 from datetime import datetime, timedelta
 
 from sqlalchemy import select
-from . import schemas, database, models
+
+from ..schemas import schemas
+
+from ..models import models
+from ..settings import database
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession

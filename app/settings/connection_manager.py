@@ -3,8 +3,8 @@ import pytz
 import json
 import logging
 from fastapi import WebSocket
-from app.database import async_session_maker
-from app import models
+from app.settings.database import async_session_maker
+from app.models import models
 from sqlalchemy import insert
 from typing import List, Dict, Tuple
 

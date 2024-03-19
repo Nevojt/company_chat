@@ -1,12 +1,13 @@
 
 import logging
 from fastapi import HTTPException, Response, status
-from app import models, schemas
+from app.schemas import schemas
 from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import func, desc, update
 from typing import List
 
+from app.models import models
 
 # Налаштування логування
 logging.basicConfig(filename='_log/func_vote.log', format='%(asctime)s - %(levelname)s - %(message)s')
