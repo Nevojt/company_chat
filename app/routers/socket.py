@@ -10,6 +10,9 @@ from ..schemas import schemas
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.functions.func_socket import update_user_status, change_message, fetch_last_messages, update_room_for_user, update_room_for_user_live, process_vote, delete_message
+from app.functions.moderator import censor_message, load_banned_words
+
+banned_words = load_banned_words("app/functions/banned_words.csv")
 
 # Налаштування логування
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -73,14 +76,16 @@ async def websocket_endpoint(
                                 
 
                 except Exception as e:
-                    logger.error(f"Error processing vote: {e}", exc_info=True)  # Запис помилки
+                    logger.error(f"Error processing vote: {e}", exc_info=True)
                     await websocket.send_json({"message": f"Error processing vote: {e}"})
                     
             # Block change message 
             elif 'change_message' in data:
                 try:
                     message_data = schemas.SocketUpdate(**data['change_message'])
-                    await change_message(message_data.id, message_data, session, user)
+                    
+                    censored_text = censor_message(message_data.message, banned_words)
+                    await change_message(message_data.id, schemas.SocketUpdate(id=message_data.id, message=censored_text), session, user)
                     
                     messages = await fetch_last_messages(room, session)
                     
@@ -91,7 +96,7 @@ async def websocket_endpoint(
                                 await connection.send_text(message.model_dump_json())
                                 
                 except Exception as e:
-                    logger.error(f"Error processing change: {e}", exc_info=True)  # Запис помилки
+                    logger.error(f"Error processing change: {e}", exc_info=True)
                     await websocket.send_json({"message": f"Error processing change: {e}"})
             
             # Block delete message       
@@ -109,7 +114,7 @@ async def websocket_endpoint(
                                 await connection.send_text(message.model_dump_json())
                                 
                 except Exception as e:
-                    logger.error(f"Error processing delete: {e}", exc_info=True)  # Запис помилки
+                    logger.error(f"Error processing delete: {e}", exc_info=True)
                     await websocket.send_json({"message": f"Error processing deleted: {e}"})
                     
             # Block reply message     
@@ -117,12 +122,12 @@ async def websocket_endpoint(
                 # Обробка відповіді на повідомлення
                 reply_data = data['reply']
                 original_message_id = reply_data['original_message_id']
-                reply_message = reply_data['message']
+                # reply_message = reply_data['message']
 
-                # await websocket.send_json({"message": "Reload"})
+                censored_message = censor_message(reply_data['message'], banned_words)
                 current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 await manager.broadcast(
-                                    message=reply_message,
+                                    message=censored_message,
                                     rooms=room,
                                     created_at=current_time,
                                     receiver_id=user.id,
@@ -138,8 +143,9 @@ async def websocket_endpoint(
             
             # Block send message     
             else:
+                censored_message = censor_message(data['message'], banned_words)
                 current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")  
-                await manager.broadcast(f"{data['message']}",
+                await manager.broadcast(censored_message,
                                         rooms=room,
                                         created_at=current_time,
                                         receiver_id=user.id,
