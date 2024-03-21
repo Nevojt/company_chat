@@ -1,6 +1,6 @@
 
 import logging
-from fastapi import HTTPException, Response, status
+from fastapi import HTTPException, status
 from app.schemas import schemas
 from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession

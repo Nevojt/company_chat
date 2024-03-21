@@ -9,13 +9,7 @@ from psycopg2.extras import RealDictCursor
 
 
 Base = declarative_base()
-SQLALCHEMY_DATABASE_URL = f'postgresql://{settings.database_name}:{settings.database_password}@{settings.database_hostname}:{settings.database_port}/{settings.database_username}'
-
-
-
-engine = create_engine(SQLALCHEMY_DATABASE_URL, pool_size=20, max_overflow=30)
-        
-        
+          
 ASINC_SQLALCHEMY_DATABASE_URL = f'postgresql+asyncpg://{settings.database_name}:{settings.database_password}@{settings.database_hostname}:{settings.database_port}/{settings.database_username}'
 
 engine_asinc = create_async_engine(ASINC_SQLALCHEMY_DATABASE_URL)

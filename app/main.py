@@ -1,11 +1,8 @@
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .settings.database import engine
 from .routers import socket
-from app.models import models
 
-models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     docs_url="/docs",

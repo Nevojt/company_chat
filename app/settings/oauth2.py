@@ -7,7 +7,7 @@ from sqlalchemy import select
 from ..schemas import schemas
 
 from ..models import models
-from ..settings import database
+from ..settings.database import get_async_session
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -46,7 +46,7 @@ def verify_access_token(token: str, credentials_exception):
 
     return token_data
     
-async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(database.get_async_session)):
+async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_async_session)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED, 
         detail="Could not validate credentials", 

@@ -1,11 +1,9 @@
 from datetime import datetime
 import logging
-from sqlalchemy import update
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends
 from app.settings.connection_manager import ConnectionManager
 from app.settings.database import get_async_session
 from app.settings import oauth2
-from app.models import models
 from ..schemas import schemas
 from sqlalchemy.ext.asyncio import AsyncSession
 

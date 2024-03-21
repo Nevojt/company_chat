@@ -23,6 +23,7 @@ class Socket(Base):
 
 class User(Base):
     __tablename__ = 'users'
+    
     id = Column(Integer, primary_key=True, nullable=False, index=True, autoincrement=True)
     email = Column(String, nullable=False, unique=True)
     user_name = Column(String, nullable=False)
