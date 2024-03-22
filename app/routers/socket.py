@@ -141,8 +141,17 @@ async def websocket_endpoint(
             
             # Block send message     
             else:
-                censored_message = censor_message(data['message'], banned_words)
-                current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")  
+                original_message = data['message']
+                censored_message = censor_message(original_message, banned_words)
+                current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                
+                if censored_message != original_message:
+                    warning_message = {
+                        "type": "system_warning",
+                        "content": "Ваше повідомлення було модифіковано, оскільки воно містило нецензурні слова."
+                    }  
+                    await websocket.send_json(warning_message)
+                    
                 await manager.broadcast(censored_message,
                                         rooms=room,
                                         created_at=current_time,
@@ -173,9 +182,6 @@ async def websocket_endpoint(
                                 verified=user.verified,
                                 id_return=None,
                                 add_to_db=False)
-        
-        
-# @router.get('/ws/{room}/users')
-# async def active_users(room: str):
-#     active_users = [{"user_id": user_id, "user_name": user_info[1], "avatar": user_info[2]} for user_id, user_info in manager.user_connections.items()]
-#     return {"room": room, "active_users": active_users}
+    finally:
+        await session.close()
+        print("Session closed")

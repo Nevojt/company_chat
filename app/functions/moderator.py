@@ -30,15 +30,3 @@ def censor_message(message, banned_words):
 
     return ' '.join(censored_words)
 
-# Назва файлу CSV з образливими словами
-
-
-# Завантаження списку образливих слів
-
-
-# # # Приклад повідомлення
-# message = "Це приклад ебать повідомлення з сука."
-
-# # Використання функції
-# censored_message = censor_message(message, banned_words)
-# print(censored_message)
