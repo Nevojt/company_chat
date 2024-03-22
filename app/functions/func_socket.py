@@ -44,7 +44,7 @@ async def fetch_last_messages(rooms: str, session: AsyncSession) -> List[schemas
         models.Socket.id, models.User.id
     ).order_by(
         desc(models.Socket.created_at)
-    ).limit(50)
+    )
 
     result = await session.execute(query)
     raw_messages = result.all()
