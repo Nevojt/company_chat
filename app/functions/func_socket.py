@@ -31,12 +31,12 @@ async def fetch_last_messages(rooms: str, session: AsyncSession) -> List[schemas
     List[schemas.SocketModel]: A list of SocketModel objects representing the last 50 messages in the room.
     """
     query = select(
-        models.Socket, 
-        models.User, 
-        func.coalesce(func.sum(models.Vote.dir), 0).label('votes')
+    models.Socket, 
+    models.User, 
+    func.coalesce(func.sum(models.Vote.dir), 0).label('votes')
     ).outerjoin(
         models.Vote, models.Socket.id == models.Vote.message_id
-    ).join(
+    ).outerjoin( 
         models.User, models.Socket.receiver_id == models.User.id
     ).filter(
         models.Socket.rooms == rooms
@@ -55,11 +55,11 @@ async def fetch_last_messages(rooms: str, session: AsyncSession) -> List[schemas
             created_at=socket.created_at,
             receiver_id=socket.receiver_id,
             message=socket.message,
-            user_name=user.user_name,
-            avatar=user.avatar,
-            verified=user.verified,
+            user_name=user.user_name if user is not None else "DELETED",  # Додана перевірка на None
+            avatar=user.avatar if user is not None else "https://tygjaceleczftbswxxei.supabase.co/storage/v1/object/public/image_bucket/inne/image/boy_1.webp",
+            verified=user.verified if user is not None else None,
             id=socket.id,
-            vote=votes, 
+            vote=votes,
             id_return=socket.id_return
         )
         for socket, user, votes in raw_messages

@@ -15,7 +15,7 @@ class Socket(Base):
     id = Column(Integer, primary_key=True, nullable=False, index=True, autoincrement=True)
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
     message = Column(String, nullable=False)
-    receiver_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    receiver_id = Column(Integer, ForeignKey('users.id', ondelete='SET NULL'))
     rooms = Column(String, ForeignKey('rooms.name_room', ondelete='CASCADE', onupdate='CASCADE'), nullable=False)
     id_return = Column(Integer)
   
@@ -28,7 +28,7 @@ class User(Base):
     email = Column(String, nullable=False, unique=True)
     user_name = Column(String, nullable=False)
     password = Column(String, nullable=False)
-    avatar = Column(String, nullable=False, server_default='https://tygjaceleczftbswxxei.supabase.co/storage/v1/object/public/image_bucket/content%20common%20chat/Avatar%20Desktop/avatar_default.jpg')
+    avatar = Column(String, nullable=False)
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
     verified = Column(Boolean, nullable=False, server_default='false')
     token_verify = Column(String, nullable=True)
