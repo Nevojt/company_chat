@@ -14,10 +14,11 @@ class Socket(Base):
     
     id = Column(Integer, primary_key=True, nullable=False, index=True, autoincrement=True)
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
-    message = Column(String, nullable=False)
+    message = Column(String)
     receiver_id = Column(Integer, ForeignKey('users.id', ondelete='SET NULL'))
     rooms = Column(String, ForeignKey('rooms.name_room', ondelete='CASCADE', onupdate='CASCADE'), nullable=False)
     id_return = Column(Integer)
+    fileUrl = Column(String)
   
 
 

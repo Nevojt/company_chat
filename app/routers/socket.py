@@ -117,10 +117,8 @@ async def websocket_endpoint(
                     
             # Block reply message     
             elif 'reply' in data:
-                # Обробка відповіді на повідомлення
                 reply_data = data['reply']
                 original_message_id = reply_data['original_message_id']
-                # reply_message = reply_data['message']
 
                 censored_message = censor_message(reply_data['message'], banned_words)
                 current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -133,7 +131,21 @@ async def websocket_endpoint(
                                     avatar=user.avatar,
                                     verified=user.verified,
                                     id_return=original_message_id,
-                                    add_to_db=True) 
+                                    add_to_db=True)
+            elif 'fileUrl' in data:
+                file_url = data['fileUrl']
+                current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                await manager.broadcast_file(
+                                    file=file_url,
+                                    rooms=room,
+                                    created_at=current_time,
+                                    receiver_id=user.id,
+                                    user_name=user.user_name,
+                                    avatar=user.avatar,
+                                    verified=user.verified,
+                                    add_to_db=True
+                                )
+                
                 
             # Blok following typing message
             elif 'type' in data:   

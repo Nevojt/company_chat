@@ -55,6 +55,7 @@ async def fetch_last_messages(rooms: str, session: AsyncSession) -> List[schemas
             created_at=socket.created_at,
             receiver_id=socket.receiver_id,
             message=socket.message,
+            fileUrl=socket.fileUrl,
             user_name=user.user_name if user is not None else "DELETED",
             avatar=user.avatar if user is not None else "https://tygjaceleczftbswxxei.supabase.co/storage/v1/object/public/image_bucket/inne/image/boy_1.webp",
             verified=user.verified if user is not None else None,
