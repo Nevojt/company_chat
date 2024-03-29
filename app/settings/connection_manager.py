@@ -148,7 +148,7 @@ class ConnectionManager:
             "created_at": current_time_utc,
             "receiver_id": receiver_id,
             "id": file_id,
-            "imageUrl": file,
+            "fileUrl": file,
             "user_name": user_name,
             "verified": verified,
             "avatar": avatar,
