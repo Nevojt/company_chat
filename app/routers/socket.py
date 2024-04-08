@@ -145,6 +145,35 @@ async def websocket_endpoint(
                                     verified=user.verified,
                                     add_to_db=True
                                 )
+            elif 'send' in data:
+                message_data = data['send']
+                original_message_id = message_data['original_message_id']
+                original_message = message_data['message']
+                file_url = message_data['fileUrl']
+                
+                if original_message != None:
+                    censored_message = censor_message(original_message, banned_words)
+                else:
+                    censored_message = None
+                
+                current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                if censored_message != original_message:
+                    warning_message = {
+                        "type": "system_warning",
+                        "content": "Ваше повідомлення було модифіковано, оскільки воно містило нецензурні слова."
+                    }  
+                    await websocket.send_json(warning_message)
+                await manager.broadcast_all(
+                                    message=censored_message,
+                                    file=file_url,
+                                    rooms=room,
+                                    created_at=current_time,
+                                    receiver_id=user.id,
+                                    user_name=user.user_name,
+                                    avatar=user.avatar,
+                                    verified=user.verified,
+                                    id_return=original_message_id,
+                                    add_to_db=True)
                 
                 
             # Blok following typing message
