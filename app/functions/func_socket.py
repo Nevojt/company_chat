@@ -56,12 +56,13 @@ async def fetch_last_messages(rooms: str, session: AsyncSession) -> List[schemas
             receiver_id=socket.receiver_id,
             message=socket.message,
             fileUrl=socket.fileUrl,
-            user_name=user.user_name if user is not None else "DELETED",
+            user_name=user.user_name if user is not None else "Unknown user",
             avatar=user.avatar if user is not None else "https://tygjaceleczftbswxxei.supabase.co/storage/v1/object/public/image_bucket/inne/image/boy_1.webp",
             verified=user.verified if user is not None else None,
             id=socket.id,
             vote=votes,
-            id_return=socket.id_return
+            id_return=socket.id_return,
+            edited=socket.edited
         )
         for socket, user, votes in raw_messages
     ]
@@ -231,7 +232,8 @@ async def change_message(id_message: int, message_update: schemas.SocketUpdate,
     if message is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Message not found or you don't have permission to edit this message")
 
-    message.message = message_update.message
+    message.message = message_update.message 
+    message.edited = True
     session.add(message)
     await session.commit()
 

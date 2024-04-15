@@ -18,6 +18,7 @@ class SocketModel(BaseModel):
     verified: Optional[bool] = None
     vote: int
     id_return: Optional[int] = None
+    edited: bool
         
 class SocketUpdate(BaseModel):
     id: int

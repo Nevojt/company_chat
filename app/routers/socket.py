@@ -83,7 +83,9 @@ async def websocket_endpoint(
                     message_data = schemas.SocketUpdate(**data['change_message'])
                     
                     censored_text = censor_message(message_data.message, banned_words)
-                    await change_message(message_data.id, schemas.SocketUpdate(id=message_data.id, message=censored_text), session, user)
+                    await change_message(message_data.id, schemas.SocketUpdate(id=message_data.id,
+                                                                               message=censored_text
+                                                                               ), session, user)
                     
                     messages = await fetch_last_messages(room, session)
                     
