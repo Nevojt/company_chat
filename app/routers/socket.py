@@ -90,7 +90,7 @@ async def websocket_endpoint(
                     messages = await fetch_last_messages(room, session)
                     
                     for user_id, (connection, _, _, user_room, _) in manager.user_connections.items():
-                       # await connection.send_json({"message": "Message updated "})
+                        await connection.send_json({"message": "Message updated "})
                         if user_room == room:
                             for message in messages:
                                 await connection.send_text(message.model_dump_json())
@@ -108,7 +108,7 @@ async def websocket_endpoint(
                     messages = await fetch_last_messages(room, session)
                     
                     for user_id, (connection, _, _, user_room, _) in manager.user_connections.items():
-                       # await connection.send_json({"message": "Message delete"})
+                        await connection.send_json({"message": "Message delete"})
                         if user_room == room:
                             for message in messages:
                                 await connection.send_text(message.model_dump_json())
