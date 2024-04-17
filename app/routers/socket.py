@@ -175,7 +175,8 @@ async def websocket_endpoint(
                                     avatar=user.avatar,
                                     verified=user.verified,
                                     id_return=original_message_id,
-                                    add_to_db=True)
+                                    add_to_db=True,
+                                    edited=False)
                 
                 
             # Blok following typing message
@@ -203,7 +204,8 @@ async def websocket_endpoint(
                                         avatar=user.avatar,
                                         verified=user.verified,
                                         id_return=None,
-                                        add_to_db=True)
+                                        add_to_db=True
+                                        )
                 
             
     except WebSocketDisconnect:

@@ -98,7 +98,8 @@ class ConnectionManager:
             "verified": verified,
             "avatar": avatar,
             "vote": vote_count,
-            "id_return": id_return
+            "id_return": id_return,
+            "edited": False
                 
         }
 
@@ -237,7 +238,8 @@ class ConnectionManager:
             "verified": verified,
             "avatar": avatar,
             "vote": vote_count,
-            "id_return": id_return if id_return is not None else None
+            "id_return": id_return if id_return is not None else None,
+            "edited": False
                 
         }
 
