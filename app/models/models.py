@@ -47,7 +47,7 @@ class User_Status(Base):
     user_name = Column(String, nullable=False)
     status = Column(Boolean, server_default='True', nullable=False)
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
-    
+
     
     
 class Rooms(Base):
@@ -57,6 +57,8 @@ class Rooms(Base):
     name_room = Column(String, nullable=False, unique=True)
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
     image_room = Column(String, nullable=False)
+    owner = Column(Integer, ForeignKey('users.id', ondelete='SET NULL'))
+    secret_room = Column(Boolean, server_default='false')
 
 
 class Vote(Base):

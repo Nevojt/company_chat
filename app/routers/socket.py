@@ -175,8 +175,8 @@ async def websocket_endpoint(
                                     avatar=user.avatar,
                                     verified=user.verified,
                                     id_return=original_message_id,
-                                    add_to_db=True,
-                                    edited=False)
+                                    add_to_db=True
+                                    )
                 
                 
             # Blok following typing message
