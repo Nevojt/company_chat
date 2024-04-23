@@ -8,6 +8,7 @@ from ..schemas import schemas
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.functions.func_socket import update_user_status, change_message, fetch_last_messages, update_room_for_user, update_room_for_user_live, process_vote, delete_message
+from app.functions.func_socket import fetch_room_data
 from app.functions.moderator import censor_message, load_banned_words
 
 banned_words = load_banned_words("app/functions/banned_words.csv")
@@ -32,6 +33,11 @@ async def websocket_endpoint(
     ):
     
     user = await oauth2.get_current_user(token, session)
+    
+    room_data = await fetch_room_data(room, session)  # Вам потрібно реалізувати цю функцію
+    if room_data.block:
+        await websocket.close(code=1008)  # Код WebSocket для "Policy Violation"
+        return
 
     await manager.connect(websocket, user.id, user.user_name, user.avatar, room, user.verified)
     

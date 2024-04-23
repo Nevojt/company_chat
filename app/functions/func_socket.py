@@ -288,3 +288,17 @@ async def update_user_status(session: AsyncSession, user_id: int, is_online: boo
         logger.info(f"User status updated for user {user_id}: {is_online}")
     except Exception as e:
         logger.error(f"Error updating user status for user {user_id}: {e}", exc_info=True)
+        
+        
+        
+async def fetch_room_data(room: str, session: AsyncSession):
+    
+    room_query = select(models.Rooms).where(models.Rooms.name_room == room)
+    room_result = await session.execute(room_query)
+    room_record = room_result.scalar()
+    
+    if room_record is None:
+        return None
+    
+    return room_record
+        

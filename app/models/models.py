@@ -59,6 +59,7 @@ class Rooms(Base):
     image_room = Column(String, nullable=False)
     owner = Column(Integer, ForeignKey('users.id', ondelete='SET NULL'))
     secret_room = Column(Boolean, server_default='false')
+    block = Column(Boolean, default=False)
 
 
 class Vote(Base):
