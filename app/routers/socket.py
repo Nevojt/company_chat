@@ -34,13 +34,15 @@ async def websocket_endpoint(
     
     user = await oauth2.get_current_user(token, session)
     
-    room_data = await fetch_room_data(room, session)  # Вам потрібно реалізувати цю функцію
-    if room_data.block:
-        await websocket.close(code=1008)  # Код WebSocket для "Policy Violation"
-        return
+    room_data = await fetch_room_data(room, session)
+    
 
     await manager.connect(websocket, user.id, user.user_name, user.avatar, room, user.verified)
     
+    if room_data.block:
+        await websocket.send_text("This chat is temporarily blocked.")
+        await websocket.close(code=1008)
+        return
       
     await update_room_for_user(user.id, room, session)
     
