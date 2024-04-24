@@ -306,16 +306,14 @@ async def fetch_room_data(room: str, session: AsyncSession):
 async def send_message_blocking(room: str, manager: object):
         
         current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        await manager.broadcast_all(
-                                    message="This chat is temporarily blocked.",
-                                    file=None,
-                                    rooms=room,
-                                    created_at=current_time,
-                                    receiver_id=2,
-                                    user_name="System",
-                                    avatar="https://tygjaceleczftbswxxei.supabase.co/storage/v1/object/public/image_bucket/inne/image/girl_5.webp",
-                                    verified=True,
-                                    id_return=None,
-                                    add_to_db=False
+        await manager.broadcast(
+                                message="This chat is temporarily blocked.",
+                                rooms=room,
+                                created_at=current_time,
+                                receiver_id=2,
+                                user_name="System",
+                                avatar="https://tygjaceleczftbswxxei.supabase.co/storage/v1/object/public/image_bucket/inne/image/girl_5.webp",
+                                verified=True,
+                                id_return=None,
+                                add_to_db=False
         )
-        
