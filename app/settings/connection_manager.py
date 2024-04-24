@@ -231,7 +231,7 @@ class ConnectionManager:
             
             "created_at": current_time_utc,
             "receiver_id": receiver_id,
-            "id": file_id,
+            "id": file_id if file_id is not None else 0,
             "message": message if message is not None else None,
             "fileUrl": file if file is not None else None,
             "user_name": user_name,

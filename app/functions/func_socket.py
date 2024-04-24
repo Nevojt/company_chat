@@ -303,17 +303,26 @@ async def fetch_room_data(room: str, session: AsyncSession):
     
     return room_record
 
-async def send_message_blocking(room: str, manager: object):
+async def send_message_blocking(room: str, manager: object, session: AsyncSession):
+        
+        user_query = select(models.User).where(models.User.id == 2)
+        user_result = await session.execute(user_query)
+        user = user_result.scalar_one() 
+        
+        if not user:
+            return
         
         current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        await manager.broadcast(
+        await manager.broadcast_all(
                                 message="This chat is temporarily blocked.",
+                                file=None,
                                 rooms=room,
                                 created_at=current_time,
-                                receiver_id=2,
-                                user_name="System",
-                                avatar="https://tygjaceleczftbswxxei.supabase.co/storage/v1/object/public/image_bucket/inne/image/girl_5.webp",
-                                verified=True,
+                                receiver_id=user.id,
+                                user_name=user.user_name,
+                                avatar=user.avatar,
+                                verified=user.verified,
                                 id_return=None,
                                 add_to_db=False
-        )
+                            )
+        
