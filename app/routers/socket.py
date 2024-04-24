@@ -40,7 +40,7 @@ async def websocket_endpoint(
     await manager.connect(websocket, user.id, user.user_name, user.avatar, room, user.verified)
     
     if room_data.block:
-        await websocket.send_text("This chat is temporarily blocked.")
+        await websocket.send_json({"message":"This chat is temporarily blocked."})
         await websocket.close(code=1008)
         return
       
