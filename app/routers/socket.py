@@ -8,7 +8,7 @@ from ..schemas import schemas
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.functions.func_socket import update_user_status, change_message, fetch_last_messages, update_room_for_user, update_room_for_user_live, process_vote, delete_message
-from app.functions.func_socket import fetch_room_data
+from app.functions.func_socket import fetch_room_data, send_message_blocking
 from app.functions.moderator import censor_message, load_banned_words
 
 banned_words = load_banned_words("app/functions/banned_words.csv")
@@ -40,7 +40,7 @@ async def websocket_endpoint(
     await manager.connect(websocket, user.id, user.user_name, user.avatar, room, user.verified)
     
     if room_data.block:
-        await websocket.send_json({"message":"This chat is temporarily blocked."})
+        await send_message_blocking(room, manager)
         await websocket.close(code=1008)
         return
       
@@ -58,7 +58,7 @@ async def websocket_endpoint(
     # Отримуємо останні повідомлення
     messages = await fetch_last_messages(room, session)
     await update_user_status(session, user.id, True)
-    # Відправляємо кожне повідомлення користувачеві
+    
     for message in messages:  
         await websocket.send_text(message.model_dump_json()) 
     
