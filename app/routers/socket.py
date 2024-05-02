@@ -40,9 +40,12 @@ async def websocket_endpoint(
     await manager.connect(websocket, user.id, user.user_name, user.avatar, room, user.verified)
     
     if room_data.block:
-        await send_message_blocking(room, manager, session)
-        await websocket.close(code=1008)
-        return
+        if user.role != 'admin':
+            await send_message_blocking(room, manager, session)
+            await websocket.close(code=1008)
+            return
+        else:
+            logger.info(f"Admin {user.user_name} has accessed the blocked room {room}.")
       
     await update_room_for_user(user.id, room, session)
     
