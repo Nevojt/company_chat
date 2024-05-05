@@ -265,3 +265,45 @@ class ConnectionManager:
             
             message_id = result.inserted_primary_key[0]
             return message_id
+        
+    async def send_message_to_user(self, user_id: int, file: Optional[str], message: Optional[str],
+                                rooms: str, receiver_id: int,
+                                id_return: Optional[int], 
+                                user_name: str, avatar: str, created_at: str, 
+                                verified: bool, add_to_db: bool):
+        """
+        Sends a message to all active WebSocket connections. If `add_to_db` is True, it also
+        adds the message to the database.
+        """
+        
+        timezone = pytz.timezone('UTC')
+        current_time_utc = datetime.now(timezone).isoformat()
+        file_id = None
+        vote_count = 0
+
+
+        if add_to_db:
+            file_id = await self.add_all_to_database(file, message, rooms, receiver_id, id_return)
+
+        message_data = {
+            
+            "created_at": current_time_utc,
+            "receiver_id": receiver_id,
+            "id": file_id if file_id is not None else 0,
+            "message": message if message is not None else None,
+            "fileUrl": file if file is not None else None,
+            "user_name": user_name,
+            "verified": verified,
+            "avatar": avatar,
+            "vote": vote_count,
+            "id_return": id_return if id_return is not None else None,
+            "edited": False
+                
+        }
+
+        message_json = json.dumps(message_data, ensure_ascii=False)
+        
+        # Send the message only to the specified user_id
+        connection = self.user_connections.get(user_id)
+        if connection:
+            await connection[0].send_text(message_json) 
