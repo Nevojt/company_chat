@@ -8,7 +8,7 @@ from ..schemas import schemas
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.functions.func_socket import update_user_status, change_message, fetch_last_messages, update_room_for_user, update_room_for_user_live, process_vote, delete_message
-from app.functions.func_socket import fetch_room_data, send_message_blocking
+from app.functions.func_socket import fetch_room_data, send_message_blocking, ban_user,  send_message_mute_user
 from app.functions.moderator import censor_message, load_banned_words
 
 banned_words = load_banned_words("app/functions/banned_words.csv")
@@ -35,8 +35,8 @@ async def websocket_endpoint(
     user = await oauth2.get_current_user(token, session)
     
     room_data = await fetch_room_data(room, session)
+    user_baned = await ban_user(room, user, session)
     
-
     await manager.connect(websocket, user.id, user.user_name, user.avatar, room, user.verified)
     
     if room_data.block:
@@ -68,7 +68,9 @@ async def websocket_endpoint(
     try:
         while True:
             data = await websocket.receive_json()
-            
+            if user_baned:
+                await send_message_mute_user(room, user, manager, session)  
+                continue
             # Created likes
             if 'vote' in data:
                 try:
@@ -176,6 +178,8 @@ async def websocket_endpoint(
                         "content": "Ваше повідомлення було модифіковано, оскільки воно містило нецензурні слова."
                     }  
                     await websocket.send_json(warning_message)
+            
+                    
                 await manager.broadcast_all(
                                     message=censored_message,
                                     file=file_url,
@@ -207,16 +211,19 @@ async def websocket_endpoint(
                     }  
                     await websocket.send_json(warning_message)
                     
-                await manager.broadcast(censored_message,
-                                        rooms=room,
-                                        created_at=current_time,
-                                        receiver_id=user.id,
-                                        user_name=user.user_name,
-                                        avatar=user.avatar,
-                                        verified=user.verified,
-                                        id_return=None,
-                                        add_to_db=True
-                                        )
+                
+                    await send_message_mute_user(room, user, manager, session) 
+                else:                
+                    await manager.broadcast(censored_message,
+                                            rooms=room,
+                                            created_at=current_time,
+                                            receiver_id=user.id,
+                                            user_name=user.user_name,
+                                            avatar=user.avatar,
+                                            verified=user.verified,
+                                            id_return=None,
+                                            add_to_db=True
+                                            )
                 
             
     except WebSocketDisconnect:

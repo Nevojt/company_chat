@@ -1,6 +1,7 @@
-from sqlalchemy import Boolean, Column, Integer, String, ForeignKey, Enum
+from sqlalchemy import Boolean, Column, DateTime, Integer, String, ForeignKey, Enum
 from sqlalchemy.sql.expression import text
 from sqlalchemy.sql.sqltypes import TIMESTAMP
+from sqlalchemy.orm import relationship
 from enum import Enum as PythonEnum
 from ..settings.database import Base
 
@@ -37,6 +38,8 @@ class User(Base):
     refresh_token = Column(String, nullable=True)
     role = Column(Enum(UserRole), default=UserRole.user)
     
+    bans = relationship("Ban", back_populates="user")
+    
 class User_Status(Base):
     __tablename__ = 'user_status' 
     
@@ -60,6 +63,17 @@ class Rooms(Base):
     owner = Column(Integer, ForeignKey('users.id', ondelete='SET NULL'))
     secret_room = Column(Boolean, server_default='false')
     block = Column(Boolean, default=False)
+    
+class Ban(Base):
+    __tablename__ = 'bans'
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey('users.id', ondelete="CASCADE"),  nullable=False)
+    room_id = Column(Integer, ForeignKey("rooms.id", ondelete="CASCADE"), nullable=False)
+    start_time = Column(DateTime)
+    end_time = Column(DateTime)
+    
+    user = relationship("User", back_populates="bans") 
 
 
 class Vote(Base):

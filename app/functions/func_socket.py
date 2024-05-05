@@ -1,5 +1,6 @@
 
 from datetime import datetime
+import pytz
 import logging
 from fastapi import HTTPException, status
 from app.schemas import schemas
@@ -325,4 +326,69 @@ async def send_message_blocking(room: str, manager: object, session: AsyncSessio
                                 id_return=None,
                                 add_to_db=False
                             )
+        
+async def send_message_mute_user(room: str, current_user: models.User, manager: object, session: AsyncSession):
+        
+        user_query = select(models.User).where(models.User.id == 2)
+        user_result = await session.execute(user_query)
+        user = user_result.scalar_one() 
+        
+        room_query = select(models.Rooms).where(models.Rooms.name_room == room)
+        room_result = await session.execute(room_query)
+        room_record = room_result.scalar()
+        
+        current_time_utc = datetime.now(pytz.timezone('UTC'))
+        current_time_naive = current_time_utc.replace(tzinfo=None)  # Використання pytz.utc для консистентності
+        ban = select(models.Ban).where(
+            models.Ban.user_id == current_user.id,
+            models.Ban.room_id == room_record.id,
+            models.Ban.end_time > current_time_naive  # Відразу фільтрувати активні бани
+        )
+        ban_result = await session.execute(ban)
+        ban_record = ban_result.scalar()
+        
+        if ban_record:
+            minutes = (ban_record.end_time - current_time_naive).total_seconds() / 60
+            current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            await manager.broadcast_all(
+                message=f"Sorry, but the owner of the room has blocked you. Until the end of the block remained {minutes:.0f} minutes.",
+                                file=None,
+                                rooms=room,
+                                created_at=current_time,
+                                receiver_id=user.id,
+                                user_name=user.user_name,
+                                avatar=user.avatar,
+                                verified=user.verified,
+                                id_return=None,
+                                add_to_db=False
+                            )
+        print("Banned")
+
+async def ban_user(room: str, current_user: models.User, session: AsyncSession):
+    room_query = select(models.Rooms).where(models.Rooms.name_room == room)
+    room_result = await session.execute(room_query)
+    room_record = room_result.scalar_one_or_none()
+    
+    if not room_record:
+        return
+
+    ban_query = select(models.Ban).where(models.Ban.user_id == current_user.id,
+                                         models.Ban.room_id == room_record.id)
+    ban_result = await session.execute(ban_query)
+    ban_record = ban_result.scalar()
+    
+    current_time_utc = datetime.now(pytz.timezone('UTC'))
+    current_time_naive = current_time_utc.replace(tzinfo=None)
+    # print(current_time_naive)
+    # print(ban_record.end_time)
+    
+    if ban_record:
+        if current_time_naive > ban_record.end_time:
+            await session.delete(ban_record)
+            await session.commit()
+            return False
+        else:
+            return True
+    else:
+        return False
         
