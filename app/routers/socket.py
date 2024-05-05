@@ -72,6 +72,7 @@ async def websocket_endpoint(
             if 'type' in data:
                 if not user_baned:
                     await manager.notify_users_typing(room, user.user_name, user.id)
+                continue
                     
             if user_baned:
                 await send_message_mute_user(room, user, manager, session)  
