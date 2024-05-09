@@ -28,7 +28,8 @@ manager = ConnectionManager()
 async def websocket_endpoint(
     websocket: WebSocket,
     room: str,
-    token: str,
+    limit: int = 50,
+    token: str = '',
     session: AsyncSession = Depends(get_async_session)
     ):
     
@@ -59,7 +60,7 @@ async def websocket_endpoint(
     await manager.send_active_users(room)
     
     # Отримуємо останні повідомлення
-    messages = await fetch_last_messages(room, session)
+    messages = await fetch_last_messages(room, limit, session)
     await update_user_status(session, user.id, True)
     
     for message in messages:  
@@ -83,7 +84,7 @@ async def websocket_endpoint(
                     vote_data = schemas.Vote(**data['vote'])
                     await process_vote(vote_data, session, user)
                  
-                    messages = await fetch_last_messages(room, session)
+                    messages = await fetch_last_messages(room, limit, session)
                     
                     for user_id, (connection, _, _, user_room, _) in manager.user_connections.items():
                         await connection.send_json({"message": "Vote posted "})
@@ -106,7 +107,7 @@ async def websocket_endpoint(
                                                                                message=censored_text
                                                                                ), session, user)
                     
-                    messages = await fetch_last_messages(room, session)
+                    messages = await fetch_last_messages(room, limit, session)
                     
                     for user_id, (connection, _, _, user_room, _) in manager.user_connections.items():
                         await connection.send_json({"message": "Message updated "})
@@ -124,7 +125,7 @@ async def websocket_endpoint(
                     message_data = schemas.SocketDelete(**data['delete_message'])
                     await delete_message(message_data.id, session, user)
                     
-                    messages = await fetch_last_messages(room, session)
+                    messages = await fetch_last_messages(room, limit, session)
                     
                     for user_id, (connection, _, _, user_room, _) in manager.user_connections.items():
                         await connection.send_json({"message": "Message delete"})
