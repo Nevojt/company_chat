@@ -28,7 +28,7 @@ manager = ConnectionManager()
 async def websocket_endpoint(
     websocket: WebSocket,
     room: str,
-    limit: int = 50,
+    limit: int = 100,
     token: str = '',
     session: AsyncSession = Depends(get_async_session)
     ):
