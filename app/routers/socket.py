@@ -175,20 +175,6 @@ async def websocket_endpoint(
     except WebSocketDisconnect:
         print("Couldn't connect to")
         manager.disconnect(websocket, user.id)
-        await manager.broadcast_all(
-                    message=f"I left the chat.",
-                    file=file_url,
-                    rooms=room,
-                    created_at=current_time,
-                    receiver_id=user.id,
-                    user_name=user.user_name,
-                    avatar=user.avatar,
-                    verified=user.verified,
-                    id_return=original_message_id,
-                    add_to_db=False
-                    )
-
-    
     finally:
         await update_room_for_user(user.id, 'Hell', session)
         await update_user_status(session, user.id, False)
