@@ -136,37 +136,8 @@ async def websocket_endpoint(
                 except Exception as e:
                     logger.error(f"Error processing delete: {e}", exc_info=True)
                     await websocket.send_json({"message": f"Error processing deleted: {e}"})
-                    
-            # Block reply message     
-            elif 'reply' in data:
-                reply_data = data['reply']
-                original_message_id = reply_data['original_message_id']
-
-                censored_message = censor_message(reply_data['message'], banned_words)
-                current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                await manager.broadcast(
-                                    message=censored_message,
-                                    rooms=room,
-                                    created_at=current_time,
-                                    receiver_id=user.id,
-                                    user_name=user.user_name,
-                                    avatar=user.avatar,
-                                    verified=user.verified,
-                                    id_return=original_message_id,
-                                    add_to_db=True)
-            elif 'fileUrl' in data:
-                file_url = data['fileUrl']
-                current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                await manager.broadcast_file(
-                                    file=file_url,
-                                    rooms=room,
-                                    created_at=current_time,
-                                    receiver_id=user.id,
-                                    user_name=user.user_name,
-                                    avatar=user.avatar,
-                                    verified=user.verified,
-                                    add_to_db=True
-                                )
+        
+            # Block send message
             elif 'send' in data:
                 message_data = data['send']
                 original_message_id = message_data['original_message_id']
@@ -200,52 +171,24 @@ async def websocket_endpoint(
                                     add_to_db=True
                                     )
                 
-                
-
-            
-            # Block send message     
-            else:
-                original_message = data['message']
-                censored_message = censor_message(original_message, banned_words)
-                current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                
-                if censored_message != original_message:
-                    warning_message = {
-                        "type": "system_warning",
-                        "content": "Ваше повідомлення було модифіковано, оскільки воно містило нецензурні слова."
-                    }  
-                    await websocket.send_json(warning_message)
-                    
-                
-                    await send_message_mute_user(room, user, manager, session) 
-                else:                
-                    await manager.broadcast(censored_message,
-                                            rooms=room,
-                                            created_at=current_time,
-                                            receiver_id=user.id,
-                                            user_name=user.user_name,
-                                            avatar=user.avatar,
-                                            verified=user.verified,
-                                            id_return=None,
-                                            add_to_db=True
-                                            )
-                
             
     except WebSocketDisconnect:
         print("Couldn't connect to")
         manager.disconnect(websocket, user.id)
+        await manager.broadcast_all(
+                    message=f"User -> {user.user_name} left the chat {room}",
+                    file=file_url,
+                    rooms=room,
+                    created_at=current_time,
+                    receiver_id=user.id,
+                    user_name=user.user_name,
+                    avatar=user.avatar,
+                    verified=user.verified,
+                    id_return=original_message_id,
+                    add_to_db=True
+                    )
 
-        
-    #     current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    #     # await manager.broadcast(f"User -> {user.user_name} left the chat {room}",
-    #     #                         rooms=room,
-    #     #                         created_at=current_time,
-    #     #                         receiver_id=user.id,
-    #     #                         user_name=user.user_name,
-    #     #                         avatar=user.avatar,
-    #     #                         verified=user.verified,
-    #     #                         id_return=None,
-    #     #                         add_to_db=False)
+    
     finally:
         await update_room_for_user(user.id, 'Hell', session)
         await update_user_status(session, user.id, False)
