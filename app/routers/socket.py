@@ -233,23 +233,23 @@ async def websocket_endpoint(
             
     except WebSocketDisconnect:
         print("Couldn't connect to")
-        await update_user_status(session, user.id, False)
-        await update_room_for_user(user.id, 'Hell', session)
         manager.disconnect(websocket, user.id)
-        await update_room_for_user_live(user.id, session)
+
         
-        await manager.send_active_users(room)
-        
-        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        await manager.broadcast(f"User -> {user.user_name} left the chat {room}",
-                                rooms=room,
-                                created_at=current_time,
-                                receiver_id=user.id,
-                                user_name=user.user_name,
-                                avatar=user.avatar,
-                                verified=user.verified,
-                                id_return=None,
-                                add_to_db=False)
+    #     current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    #     # await manager.broadcast(f"User -> {user.user_name} left the chat {room}",
+    #     #                         rooms=room,
+    #     #                         created_at=current_time,
+    #     #                         receiver_id=user.id,
+    #     #                         user_name=user.user_name,
+    #     #                         avatar=user.avatar,
+    #     #                         verified=user.verified,
+    #     #                         id_return=None,
+    #     #                         add_to_db=False)
     finally:
+        await update_room_for_user(user.id, 'Hell', session)
+        await update_user_status(session, user.id, False)
+        await update_room_for_user_live(user.id, session)
+        await manager.send_active_users(room)
         await session.close()
         print("Session closed")
