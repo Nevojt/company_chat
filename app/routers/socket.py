@@ -176,7 +176,7 @@ async def websocket_endpoint(
         print("Couldn't connect to")
         manager.disconnect(websocket, user.id)
         await manager.broadcast_all(
-                    message=f"User -> {user.user_name} left the chat {room}",
+                    message=f"I left the chat.",
                     file=file_url,
                     rooms=room,
                     created_at=current_time,
