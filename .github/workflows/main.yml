@@ -35,6 +35,6 @@ jobs:
         sshpass -p $SSH_PASSWORD ssh -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "
         eval \$(ssh-agent -s) && \
         ssh-add ~/.ssh/git_conect_key && \
-        cd /home/dmytro/chat && \
+        cd /home/$SSH_USER/chat && \
         git pull origin master && \
         echo $SSH_PASSWORD | sudo -S systemctl restart chat.service"
