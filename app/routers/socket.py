@@ -35,6 +35,10 @@ async def websocket_endpoint(
     
     user = await oauth2.get_current_user(token, session)
     
+    if user.blocked:
+        await websocket.close(code=1008)
+        return 
+    
     room_data = await fetch_room_data(room, session)
     user_baned = await ban_user(room, user, session)
     
