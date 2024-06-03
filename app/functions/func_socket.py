@@ -260,12 +260,14 @@ async def delete_message(id_message: int,
     Raises:
         HTTPException: If an error occurs while deleting the message.
     """
-    query = select(models.Socket).where(models.Socket.id == id_message, models.Socket.receiver_id == current_user.id)
+    query = select(models.Socket).where(models.Socket.id == id_message, 
+                                        models.Socket.receiver_id == current_user.id)
     result = await session.execute(query)
     message = result.scalar()
 
     if message is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Message not found or you don't have permission to delete this message")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
+                            detail="Message not found or you don't have permission to delete this message")
 
     await session.delete(message)
     await session.commit()
