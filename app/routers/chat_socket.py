@@ -161,7 +161,6 @@ async def websocket_endpoint(
                     }  
                     await websocket.send_json(warning_message)
             
-                    
                 await manager.broadcast_all(
                                     message=censored_message,
                                     file=file_url,

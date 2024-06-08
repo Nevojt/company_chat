@@ -4,12 +4,46 @@ import pytz
 import logging
 from fastapi import HTTPException, status
 from app.schemas import schemas
+from app.settings.config import settings
 from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import func, desc, update
 from typing import List
 
 from app.models import models
+
+import base64
+from cryptography.fernet import Fernet, InvalidToken
+
+# Ініціалізація шифрувальника
+key = settings.key_crypto
+cipher = Fernet(key)
+
+def is_base64(s):
+    try:
+        return base64.b64encode(base64.b64decode(s)).decode('utf-8') == s
+    except Exception:
+        return False
+
+async def async_encrypt(data: str):
+    
+    encrypted = cipher.encrypt(data.encode())
+    encoded_string = base64.b64encode(encrypted).decode('utf-8')  # Конвертація байтів у рядок
+    return encoded_string
+
+async def async_decrypt(encoded_data: str):
+    if not is_base64(encoded_data):
+        logger.error(f"Data is not valid base64, returning original data: {encoded_data}")
+        return encoded_data  # Повертаємо оригінальні дані без розшифрування
+
+    try:
+        encrypted = base64.b64decode(encoded_data.encode('utf-8'))
+        decrypted = cipher.decrypt(encrypted).decode('utf-8')
+        return decrypted
+    except InvalidToken as e:
+        logger.error(f"Failed to decrypt, possibly due to key mismatch or data corruption: {str(e)}")
+        return None  # повернути None або обробити помилку іншим чином
+
 
 # Налаштування логування
 logging.basicConfig(filename='_log/func_vote.log', format='%(asctime)s - %(levelname)s - %(message)s')
@@ -52,22 +86,24 @@ async def fetch_last_messages(rooms: str, limit: int, session: AsyncSession) -> 
     raw_messages = result.all()
 
     # Convert raw messages to SocketModel
-    messages = [
-        schemas.SocketModel(
-            created_at=socket.created_at,
-            receiver_id=socket.receiver_id,
-            message=socket.message,
-            fileUrl=socket.fileUrl,
-            user_name=user.user_name if user is not None else "Unknown user",
-            avatar=user.avatar if user is not None else "https://tygjaceleczftbswxxei.supabase.co/storage/v1/object/public/image_bucket/inne/image/boy_1.webp",
-            verified=user.verified if user is not None else None,
-            id=socket.id,
-            vote=votes,
-            id_return=socket.id_return,
-            edited=socket.edited
+    messages = []
+    for socket, user, votes in raw_messages:
+        decrypted_message = await async_decrypt(socket.message)
+        messages.append(
+            schemas.SocketModel(
+                created_at=socket.created_at,
+                receiver_id=socket.receiver_id,
+                message=decrypted_message,
+                fileUrl=socket.fileUrl,
+                user_name=user.user_name if user is not None else "Unknown user",
+                avatar=user.avatar if user is not None else "https://example.com/default_avatar.webp",
+                verified=user.verified if user is not None else None,
+                id=socket.id,
+                vote=votes,
+                id_return=socket.id_return,
+                edited=socket.edited
+            )
         )
-        for socket, user, votes in raw_messages
-    ]
     messages.reverse()
     return messages
 
@@ -395,3 +431,6 @@ async def ban_user(room: str, current_user: models.User, session: AsyncSession):
     else:
         return False
         
+
+
+

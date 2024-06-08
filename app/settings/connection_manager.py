@@ -7,6 +7,7 @@ from app.settings.database import async_session_maker
 from app.models import models
 from sqlalchemy import insert
 from typing import List, Dict, Optional, Tuple
+from app.functions.func_socket import async_encrypt
 
 
 logging.basicConfig(filename='_log/connect_manager.log', format='%(asctime)s - %(levelname)s - %(message)s')
@@ -118,8 +119,9 @@ class ConnectionManager:
         """
         Adds a message to the database asynchronously.
         """
+        encrypt_message = await async_encrypt(message)
         async with async_session_maker() as session:
-            stmt = insert(models.Socket).values(fileUrl=fileUrl, message=message, 
+            stmt = insert(models.Socket).values(fileUrl=fileUrl, message=encrypt_message, 
                                                 rooms=rooms, receiver_id=receiver_id,
                                                 id_return=id_message)
             result =  await session.execute(stmt)
