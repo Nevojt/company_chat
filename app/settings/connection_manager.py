@@ -5,6 +5,7 @@ import logging
 from fastapi import WebSocket
 from app.settings.database import async_session_maker
 from app.models import models
+from app.schemas import schemas
 from sqlalchemy import insert
 from typing import List, Dict, Optional, Tuple
 from app.functions.func_socket import async_encrypt
@@ -90,23 +91,21 @@ class ConnectionManager:
         if add_to_db:
             file_id = await self.add_all_to_database(file, message, rooms, receiver_id, id_return)
 
-        message_data = {
-            
-            "created_at": current_time_utc,
-            "receiver_id": receiver_id,
-            "id": file_id if file_id is not None else 0,
-            "message": message if message is not None else None,
-            "fileUrl": file if file is not None else None,
-            "user_name": user_name,
-            "verified": verified,
-            "avatar": avatar,
-            "vote": vote_count,
-            "id_return": id_return if id_return is not None else None,
-            "edited": False
-                
-        }
+        socket_message = schemas.SocketModel(
+            id=file_id,
+            created_at=current_time_utc,
+            receiver_id=receiver_id,
+            message=message,
+            fileUrl=file,
+            id_return=id_return,
+            user_name=user_name,
+            verified=verified,
+            avatar=avatar,
+            vote=0,
+            edited=False
+        )
 
-        message_json = json.dumps(message_data, ensure_ascii=False)
+        message_json = socket_message.model_dump_json()
 
         # Send the message only to users in the specified room
         for user_id, (connection, _, _, user_room, _) in self.user_connections.items():
@@ -149,23 +148,21 @@ class ConnectionManager:
         if add_to_db:
             file_id = await self.add_all_to_database(file, message, rooms, receiver_id, id_return)
 
-        message_data = {
-            
-            "created_at": current_time_utc,
-            "receiver_id": receiver_id,
-            "id": file_id if file_id is not None else 0,
-            "message": message if message is not None else None,
-            "fileUrl": file if file is not None else None,
-            "user_name": user_name,
-            "verified": verified,
-            "avatar": avatar,
-            "vote": vote_count,
-            "id_return": id_return if id_return is not None else None,
-            "edited": False
-                
-        }
+        socket_message = schemas.SocketModel(
+            id=file_id,
+            created_at=current_time_utc,
+            receiver_id=receiver_id,
+            message=message,
+            fileUrl=file,
+            id_return=id_return,
+            user_name=user_name,
+            verified=verified,
+            avatar=avatar,
+            vote=0,
+            edited=False
+        )
 
-        message_json = json.dumps(message_data, ensure_ascii=False)
+        message_json = socket_message.model_dump_json()
         
         # Send the message only to the specified user_id
         connection = self.user_connections.get(user_id)
