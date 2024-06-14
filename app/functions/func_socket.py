@@ -96,7 +96,7 @@ async def fetch_last_messages(rooms: str, limit: int, session: AsyncSession) -> 
                 message=decrypted_message,
                 fileUrl=socket.fileUrl,
                 user_name=user.user_name if user is not None else "Unknown user",
-                avatar=user.avatar if user is not None else "https://example.com/default_avatar.webp",
+                avatar=user.avatar if user is not None else "https://tygjaceleczftbswxxei.supabase.co/storage/v1/object/public/image_bucket/inne/image/photo_2024-06-14_19-20-40.jpg",
                 verified=user.verified if user is not None else None,
                 id=socket.id,
                 vote=votes,
@@ -111,7 +111,6 @@ async def fetch_last_messages(rooms: str, limit: int, session: AsyncSession) -> 
 
 async def update_room_for_user(user_id: int, room: str, session: AsyncSession):
     try:
-        # Отримати запис статусу користувача
         user_status_query = select(models.User_Status).where(models.User_Status.user_id == user_id)
         user_status_result = await session.execute(user_status_query)
         user_status = user_status_result.scalar()
