@@ -26,7 +26,8 @@ def is_base64(s):
         return False
 
 async def async_encrypt(data: str):
-    
+    if data is None:
+        return None
     encrypted = cipher.encrypt(data.encode())
     encoded_string = base64.b64encode(encrypted).decode('utf-8')  # Конвертація байтів у рядок
     return encoded_string
