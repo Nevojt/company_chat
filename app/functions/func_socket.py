@@ -19,6 +19,10 @@ from cryptography.fernet import Fernet, InvalidToken
 key = settings.key_crypto
 cipher = Fernet(key)
 
+
+logging.basicConfig(filename='_log/func_vote.log', format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
 def is_base64(s):
     try:
         return base64.b64encode(base64.b64decode(s)).decode('utf-8') == s
@@ -34,8 +38,8 @@ async def async_encrypt(data: str):
 
 async def async_decrypt(encoded_data: str):
     if not is_base64(encoded_data):
-        logger.error(f"Data is not valid base64, returning original data: {encoded_data}")
-        return encoded_data  # Повертаємо оригінальні дані без розшифрування
+        # logger.error(f"Data is not valid base64, returning original data: {encoded_data}")
+        return encoded_data
 
     try:
         encrypted = base64.b64decode(encoded_data.encode('utf-8'))
@@ -43,17 +47,7 @@ async def async_decrypt(encoded_data: str):
         return decrypted
     except InvalidToken as e:
         logger.error(f"Failed to decrypt, possibly due to key mismatch or data corruption: {str(e)}")
-        return None  # повернути None або обробити помилку іншим чином
-
-
-# Налаштування логування
-logging.basicConfig(filename='_log/func_vote.log', format='%(asctime)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
-
-
-
-
-
+        return None
 
 
 async def fetch_last_messages(rooms: str, limit: int, session: AsyncSession) -> List[schemas.SocketModel]:
