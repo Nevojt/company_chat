@@ -8,7 +8,7 @@ from ..schemas import schemas
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.functions.func_socket import update_user_status, change_message, fetch_last_messages, update_room_for_user, update_room_for_user_live, process_vote, delete_message
-from app.functions.func_socket import fetch_room_data, send_message_blocking, ban_user,  send_message_mute_user
+from app.functions.func_socket import fetch_room_data, send_message_blocking, ban_user, send_message_mute_user, start_session, end_session
 from app.functions.moderator import censor_message, load_banned_words
 
 banned_words = load_banned_words("app/functions/banned_words.csv")
@@ -57,6 +57,7 @@ async def websocket_endpoint(
     x_real_ip = websocket.headers.get('x-real-ip')
     x_forwarded_for = websocket.headers.get('x-forwarded-for')
 
+    await start_session(user.id, session)
     # Використання отриманих IP-адрес
     print(f"X-Real-IP: {x_real_ip}")
     print(f"X-Forwarded-For: {x_forwarded_for}")
@@ -69,6 +70,7 @@ async def websocket_endpoint(
     
     for message in messages:  
         await websocket.send_text(message.model_dump_json()) 
+    
     
     try:
         while True:
@@ -179,6 +181,7 @@ async def websocket_endpoint(
         print("Couldn't connect to")
         manager.disconnect(websocket, user.id)
     finally:
+        await end_session(user.id, session)
         await update_room_for_user(user.id, 'Hell', session)
         await update_user_status(session, user.id, False)
         await update_room_for_user_live(user.id, session)
