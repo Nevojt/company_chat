@@ -8,7 +8,7 @@ from ..schemas import schemas
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.functions.func_socket import update_user_status, change_message, fetch_last_messages, update_room_for_user, update_room_for_user_live, process_vote, delete_message
-from app.functions.func_socket import fetch_room_data, send_message_blocking, ban_user,  send_message_mute_user
+from app.functions.func_socket import fetch_room_data, send_message_blocking, ban_user,  send_message_mute_user, get_room
 from app.functions.moderator import censor_message, load_banned_words
 
 banned_words = load_banned_words("app/functions/banned_words.csv")
@@ -24,10 +24,10 @@ router = APIRouter(
 manager = ConnectionManager()
 
 
-@router.websocket("/ws/{room}")
+@router.websocket("/ws/{room_id}")
 async def websocket_endpoint(
     websocket: WebSocket,
-    room: str,
+    room_id: int,
     limit: int = 100,
     token: str = '',
     session: AsyncSession = Depends(get_async_session)
@@ -38,6 +38,8 @@ async def websocket_endpoint(
     if user.blocked:
         await websocket.close(code=1008)
         return 
+    room = await get_room(room_id, session)
+    print(room)
     
     room_data = await fetch_room_data(room, session)
     user_baned = await ban_user(room, user, session)

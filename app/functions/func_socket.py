@@ -33,7 +33,7 @@ async def async_encrypt(data: str):
     if data is None:
         return None
     encrypted = cipher.encrypt(data.encode())
-    encoded_string = base64.b64encode(encrypted).decode('utf-8')  # Конвертація байтів у рядок
+    encoded_string = base64.b64encode(encrypted).decode('utf-8')
     return encoded_string
 
 async def async_decrypt(encoded_data: str):
@@ -425,6 +425,10 @@ async def ban_user(room: str, current_user: models.User, session: AsyncSession):
     else:
         return False
         
-
+async def get_room(room_id: int, session: AsyncSession):
+    room = select(models.Rooms).where(models.Rooms.id == room_id)
+    result = await session.execute(room)
+    existing_room = result.scalar_one_or_none()
+    return existing_room.name_room
 
 
