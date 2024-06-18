@@ -90,6 +90,9 @@ class ConnectionManager:
 
         if add_to_db:
             file_id = await self.add_all_to_database(file, message, rooms, receiver_id, id_return)
+            
+        if file_id is None:
+            file_id = 0
 
         socket_message = schemas.SocketModel(
             id=file_id,
