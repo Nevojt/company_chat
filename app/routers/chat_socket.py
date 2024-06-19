@@ -8,12 +8,12 @@ from ..schemas import schemas
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.functions.func_socket import update_user_status, change_message, fetch_last_messages, update_room_for_user, update_room_for_user_live, process_vote, delete_message
-from app.functions.func_socket import fetch_room_data, send_message_blocking, ban_user,  send_message_mute_user
+from app.functions.func_socket import fetch_room_data, send_message_blocking, ban_user, send_message_mute_user, start_session, end_session, get_room
 from app.functions.moderator import censor_message, load_banned_words
 
 banned_words = load_banned_words("app/functions/banned_words.csv")
 
-# Налаштування логування
+# Logging settings
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
@@ -61,13 +61,14 @@ async def websocket_endpoint(
     x_forwarded_for = websocket.headers.get('x-forwarded-for')
 
     await start_session(user.id, session)
-    # Використання отриманих IP-адрес
+    
+    # Use of received IP addresses
     print(f"X-Real-IP: {x_real_ip}")
     print(f"X-Forwarded-For: {x_forwarded_for}")
     
     await manager.send_active_users(room)
     
-    # Отримуємо останні повідомлення
+    # Get the latest notifications
     messages = await fetch_last_messages(room, limit, session)
     await update_user_status(session, user.id, True)
     
@@ -162,7 +163,7 @@ async def websocket_endpoint(
                 if censored_message != original_message:
                     warning_message = {
                         "type": "system_warning",
-                        "content": "Ваше повідомлення було модифіковано, оскільки воно містило нецензурні слова."
+                        "content": "Your message has been modified because it contained obscene language."
                     }  
                     await websocket.send_json(warning_message)
             

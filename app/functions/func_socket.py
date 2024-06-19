@@ -425,6 +425,40 @@ async def ban_user(room: str, current_user: models.User, session: AsyncSession):
     else:
         return False
         
+        
+        
+async def get_room(room_id: int, session: AsyncSession):
+    room = select(models.Rooms).where(models.Rooms.id == room_id)
+    result = await session.execute(room)
+    existing_room = result.scalar_one_or_none()
+    return existing_room.name_room
 
+async def start_session(user_id: int, db: AsyncSession):
+    result = await db.execute(select(models.UserOnlineTime).where(models.UserOnlineTime.user_id == user_id))
+    user_time_record = result.scalar_one_or_none()
 
+    if user_time_record is None:
+        user_time_record = models.UserOnlineTime(user_id=user_id, session_start=datetime.now(pytz.utc), total_online_time=timedelta())
+        db.add(user_time_record)
+    else:
+        user_time_record.session_start = datetime.now(pytz.utc)
+        user_time_record.session_end = None
+    
+    await db.commit()
+    await db.refresh(user_time_record)
+    return user_time_record
+
+async def end_session(user_id: int, db: AsyncSession):
+    result = await db.execute(select(models.UserOnlineTime).where(models.UserOnlineTime.user_id == user_id))
+    user_time_record = result.scalar_one_or_none()
+
+    if user_time_record and user_time_record.session_start:
+        session_end_time = datetime.now(pytz.utc)
+        session_duration = session_end_time - user_time_record.session_start
+        user_time_record.session_end = session_end_time
+        user_time_record.total_online_time += session_duration
+
+        await db.commit()
+        await db.refresh(user_time_record)
+    return user_time_record
 
