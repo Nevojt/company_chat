@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, DateTime, Integer, Interval, String, ForeignKey, Enum
+from sqlalchemy import Boolean, Column, DateTime, Integer, String, ForeignKey, Enum
 from sqlalchemy.sql.expression import text
 from sqlalchemy.sql.sqltypes import TIMESTAMP
 from sqlalchemy.orm import relationship
@@ -86,15 +86,3 @@ class Vote(Base):
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
     message_id = Column(Integer, ForeignKey("socket.id", ondelete="CASCADE"), primary_key=True)
     dir = Column(Integer)
-    
-    
-class UserOnlineTime(Base):
-    __tablename__ = 'user_online_time'
-
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
-    session_start = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
-    session_end = Column(TIMESTAMP(timezone=True), nullable=True)
-    total_online_time = Column(Interval, nullable=True, default=timedelta())
-    
-    user = relationship("User", back_populates="online_times")
