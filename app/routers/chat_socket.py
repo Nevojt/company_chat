@@ -8,7 +8,7 @@ from ..schemas import schemas
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.functions.func_socket import update_user_status, change_message, fetch_last_messages, update_room_for_user, update_room_for_user_live, process_vote, delete_message
-from app.functions.func_socket import fetch_room_data, send_message_blocking, ban_user, send_message_mute_user, start_session, end_session, get_room
+from app.functions.func_socket import fetch_room_data, send_message_blocking, ban_user, send_message_mute_user, start_session, end_session, get_room, send_message_deleted_room
 from app.functions.moderator import censor_message, load_banned_words
 
 banned_words = load_banned_words("app/functions/banned_words.csv")
@@ -68,6 +68,7 @@ async def websocket_endpoint(
     
     await manager.send_active_users(room)
     
+    
     # Get the latest notifications
     messages = await fetch_last_messages(room, limit, session)
     await update_user_status(session, user.id, True)
@@ -75,7 +76,7 @@ async def websocket_endpoint(
     for message in messages:  
         await websocket.send_text(message.model_dump_json()) 
     
-    
+    await send_message_deleted_room(room_id, manager, session)
     try:
         while True:
             data = await websocket.receive_json()

@@ -67,6 +67,7 @@ class Rooms(Base):
     owner = Column(Integer, ForeignKey('users.id', ondelete='SET NULL'))
     secret_room = Column(Boolean, server_default='false')
     block = Column(Boolean, default=False)
+    delete_at = Column(TIMESTAMP(timezone=True), nullable=True)
     
 class Ban(Base):
     __tablename__ = 'bans'

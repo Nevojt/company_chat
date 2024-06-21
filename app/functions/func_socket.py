@@ -336,6 +336,36 @@ async def fetch_room_data(room: str, session: AsyncSession):
     
     return room_record
 
+async def send_message_deleted_room(room_id: int, manager: object, session: AsyncSession):
+        
+        user_query = select(models.User).where(models.User.id == 2)
+        user_result = await session.execute(user_query)
+        user = user_result.scalar_one() 
+        
+        if not user:
+            return
+        room_query = select(models.Rooms).where(models.Rooms.id == room_id)
+        room_result = await session.execute(room_query)
+        room = room_result.scalar_one()
+        
+        if room.delete_at:
+            days_to_deletion = room.delete_at + timedelta(days=30) - datetime.now(pytz.utc)
+            if days_to_deletion.days > 0:
+                current_time = datetime.now(pytz.utc).strftime("%Y-%m-%d %H:%M:%S")
+                await manager.broadcast_all(
+                    message=f"😑 This room will be deleted in {days_to_deletion.days} days. 😑",
+                    file=None,
+                    rooms=room.name_room,
+                    created_at=current_time,
+                    receiver_id=user.id,
+                    user_name=user.user_name,
+                    avatar=user.avatar,
+                    verified=user.verified,
+                    id_return=None,
+                    add_to_db=False
+                )
+
+
 async def send_message_blocking(room: str, manager: object, session: AsyncSession):
         
         user_query = select(models.User).where(models.User.id == 2)
