@@ -194,6 +194,9 @@ async def process_vote(vote: schemas.Vote, session: AsyncSession, current_user: 
         HTTPException: If an error occurs while processing the vote.
     """
     try:
+        if vote.message_id == 0:
+            return
+        
         result = await session.execute(select(models.Socket).filter(models.Socket.id == vote.message_id))
         message = result.scalars().first()
         
@@ -463,7 +466,24 @@ async def get_room(room_id: int, session: AsyncSession):
     existing_room = result.scalar_one_or_none()
     return existing_room.name_room
 
+
+
+
 async def start_session(user_id: int, db: AsyncSession):
+    """
+    Start a user's online session.
+
+    Args:
+        user_id (int): The unique identifier of the user.
+        db (AsyncSession): The database session.
+
+    Returns:
+        models.UserOnlineTime: The record of the user's online time.
+
+    This function retrieves the user's online time record from the database.
+    If the record does not exist, it creates a new record with the current time as the session start time.
+    If the record exists, it updates the session start time to the current time.
+    """
     result = await db.execute(select(models.UserOnlineTime).where(models.UserOnlineTime.user_id == user_id))
     user_time_record = result.scalar_one_or_none()
 
@@ -479,6 +499,21 @@ async def start_session(user_id: int, db: AsyncSession):
     return user_time_record
 
 async def end_session(user_id: int, db: AsyncSession):
+    """
+    End a user's online session and update the total online time.
+
+    Args:
+        user_id (int): The unique identifier of the user.
+        db (AsyncSession): The database session.
+
+    Returns:
+        models.UserOnlineTime: The updated record of the user's online time.
+
+    This function retrieves the user's online time record from the database.
+    If the record exists and the session start time is not None, it calculates the session duration by subtracting the session start time from the current time.
+    It then updates the session end time to the current time and adds the session duration to the total online time.
+    Finally, it commits the changes to the database and refreshes the user_time_record.
+    """
     result = await db.execute(select(models.UserOnlineTime).where(models.UserOnlineTime.user_id == user_id))
     user_time_record = result.scalar_one_or_none()
 
