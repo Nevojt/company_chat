@@ -356,7 +356,7 @@ async def send_message_deleted_room(room_id: int, manager: object, session: Asyn
             if days_to_deletion.days > 0:
                 current_time = datetime.now(pytz.utc).strftime("%Y-%m-%d %H:%M:%S")
                 await manager.broadcast_all(
-                    message=f"😑 This room will be deleted in {days_to_deletion.days} days. 😑",
+                    message=f"😑 This room will be DELETED in {days_to_deletion.days} days. 😑",
                     file=None,
                     rooms=room.name_room,
                     created_at=current_time,
