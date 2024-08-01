@@ -28,13 +28,10 @@ jobs:
 
     - name: Deploy to Server
       env:
-        SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
-        SSH_HOST: ${{ secrets.SSH_HOST }}
-        SSH_USER: ${{ secrets.SSH_USER }}
+        SSH_PASSWORD: ${{ secrets.SSH_PASSWORD_COMPANY }}
+        SSH_HOST: ${{ secrets.SSH_HOST_COMPANY }}
+        SSH_USER: ${{ secrets.SSH_USER_COMPANY }}
       run: |
         sshpass -p $SSH_PASSWORD ssh -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "
-        eval \$(ssh-agent -s) && \
-        ssh-add ~/.ssh/git_conect_key && \
         cd /home/$SSH_USER/chat && \
-        git pull origin master && \
-        echo $SSH_PASSWORD | sudo -S systemctl restart chat.service"
+        ./key_git_script""
