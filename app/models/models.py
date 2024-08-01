@@ -8,8 +8,9 @@ from ..settings.database import Base
 
 
 class UserRole(str, PythonEnum):
-	user = "user"
-	admin = "admin"
+    super_admin = "super_admin"
+    admin =  "admin"
+    user = "user"
 
 class Socket(Base):
     __tablename__ = 'socket'
