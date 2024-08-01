@@ -29,3 +29,5 @@ def censor_message(message, banned_words):
     
     return ' '.join(censored_words)
 
+def tag_sayory(message):
+    return "@sayory" in message
