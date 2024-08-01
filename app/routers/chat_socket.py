@@ -9,7 +9,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.functions.func_socket import update_user_status, change_message, fetch_last_messages, update_room_for_user, update_room_for_user_live, process_vote, delete_message
 from app.functions.func_socket import fetch_room_data, send_message_blocking, ban_user, send_message_mute_user, start_session, end_session, get_room, send_message_deleted_room
-from app.functions.moderator import censor_message, load_banned_words
+from app.functions.moderator import censor_message, load_banned_words, tag_sayory
+from app.AI import sayory
+
 
 banned_words = load_banned_words("app/functions/banned_words.csv")
 
@@ -167,7 +169,7 @@ async def websocket_endpoint(
                         "content": "Your message has been modified because it contained obscene language."
                     }  
                     await websocket.send_json(warning_message)
-            
+                
                 await manager.broadcast_all(
                                     message=censored_message,
                                     file=file_url,
@@ -177,6 +179,20 @@ async def websocket_endpoint(
                                     user_name=user.user_name,
                                     avatar=user.avatar,
                                     verified=user.verified,
+                                    id_return=original_message_id,
+                                    add_to_db=True
+                                    )
+                if tag_sayory(censored_message):
+                    response_sayory = await sayory.ask_to_gpt(censored_message)
+                    await manager.broadcast_all(
+                                    message=response_sayory,
+                                    file=file_url,
+                                    rooms=room,
+                                    created_at=current_time,
+                                    receiver_id=2,
+                                    user_name="SayOry",
+                                    avatar="https://tygjaceleczftbswxxei.supabase.co/storage/v1/object/public/image_bucket/inne/image/girl_5.webp",
+                                    verified=True,
                                     id_return=original_message_id,
                                     add_to_db=True
                                     )
