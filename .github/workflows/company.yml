@@ -3,7 +3,7 @@ name: Deploy Chat
 on:
   push:
     branches:
-      - master
+      - company
 
 jobs:
   build-and-deploy:
