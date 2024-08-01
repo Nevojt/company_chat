@@ -1,0 +1,37 @@
+name: Deploy Chat
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+
+    # - name: Install dependencies
+    #   run: |
+    #     python -m pip install --upgrade pip
+    #     pip install -r requirements.txt
+
+    - name: Install sshpass
+      run: sudo apt-get install -y sshpass
+
+    # - name: Deploy to Server
+    #   env:
+    #     SSH_PASSWORD: ${{ secrets.SSH_PASSWORD_COMPANY }}
+    #     SSH_HOST: ${{ secrets.SSH_HOST_COMPANY }}
+    #     SSH_USER: ${{ secrets.SSH_USER_COMPANY }}
+    #   run: |
+    #     sshpass -p $SSH_PASSWORD ssh -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "
+    #     cd /home/$SSH_USER/chat && \
+    #     ./key_git_script""
