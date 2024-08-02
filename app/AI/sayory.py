@@ -9,6 +9,8 @@ client = AsyncOpenAI(
     api_key=sayori_key
 )
 
+instruction = "Ти асистент в менеджері і твоє ім'я saory далі буде повідомлення від користувача:  "
+
 async def ask_to_gpt(ask_to_chat: str) -> str:
     try:
         chat_completion = await client.chat.completions.create(
@@ -16,7 +18,7 @@ async def ask_to_gpt(ask_to_chat: str) -> str:
             messages=[
                 {
                 "role": "user",
-                "content": ask_to_chat,
+                "content": instruction + ask_to_chat,
                 }
             ],
             temperature=1,

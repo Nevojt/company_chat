@@ -182,7 +182,7 @@ async def websocket_endpoint(
                                     id_return=original_message_id,
                                     add_to_db=True
                                     )
-                if tag_sayory(censored_message):
+                if tag_sayory(censored_message) and censor_message is not None:
                     response_sayory = await sayory.ask_to_gpt(censored_message)
                     await manager.broadcast_all(
                                     message=response_sayory,
