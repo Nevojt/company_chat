@@ -182,20 +182,20 @@ async def websocket_endpoint(
                                     id_return=original_message_id,
                                     add_to_db=True
                                     )
-                if tag_sayory(censored_message) and censor_message is not None:
-                    response_sayory = await sayory.ask_to_gpt(censored_message)
-                    await manager.broadcast_all(
-                                    message=response_sayory,
-                                    file=file_url,
-                                    rooms=room,
-                                    created_at=current_time,
-                                    receiver_id=2,
-                                    user_name="SayOry",
-                                    avatar="https://tygjaceleczftbswxxei.supabase.co/storage/v1/object/public/image_bucket/inne/image/girl_5.webp",
-                                    verified=True,
-                                    id_return=original_message_id,
-                                    add_to_db=True
-                                    )
+                # if tag_sayory(censored_message) and censor_message is not None:
+                #     response_sayory = await sayory.ask_to_gpt(censored_message)
+                #     await manager.broadcast_all(
+                #                     message=response_sayory,
+                #                     file=file_url,
+                #                     rooms=room,
+                #                     created_at=current_time,
+                #                     receiver_id=2,
+                #                     user_name="SayOry",
+                #                     avatar="https://tygjaceleczftbswxxei.supabase.co/storage/v1/object/public/image_bucket/inne/image/girl_5.webp",
+                #                     verified=True,
+                #                     id_return=original_message_id,
+                #                     add_to_db=True
+                #                     )
                 
             
     except WebSocketDisconnect:
