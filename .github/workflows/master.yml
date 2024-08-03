@@ -35,3 +35,4 @@ jobs:
         sshpass -p $SSH_PASSWORD ssh -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "
         cd /home/$SSH_USER/chat && \
         ./key_git_script""
+# 
