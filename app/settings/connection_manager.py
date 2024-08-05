@@ -107,7 +107,8 @@ class ConnectionManager:
             edited=False
         )
 
-        message_json = socket_message.model_dump_json()
+        wrapped_message = schemas.wrap_message(socket_message)
+        message_json = wrapped_message.model_dump_json()
 
         # Send the message only to users in the specified room
         for user_id, (connection, _, _, user_room, _) in self.user_connections.items():

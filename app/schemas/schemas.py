@@ -20,6 +20,12 @@ class SocketModel(BaseModel):
     id_return: Optional[int] = None
     edited: bool
         
+class WrappedSocketMessage(BaseModel):
+    message: SocketModel        
+        
+def wrap_message(socket_model_instance: SocketModel) -> WrappedSocketMessage:
+    return WrappedSocketMessage(message=socket_model_instance)
+
 class SocketUpdate(BaseModel):
     id: int
     message: str

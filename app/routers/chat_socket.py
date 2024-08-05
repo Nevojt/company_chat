@@ -1,4 +1,5 @@
 from datetime import datetime
+import json
 import logging
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends
 from app.settings.connection_manager import ConnectionManager
@@ -75,8 +76,10 @@ async def websocket_endpoint(
     messages = await fetch_last_messages(room, limit, session)
     await update_user_status(session, user.id, True)
     
-    for message in messages:  
-        await websocket.send_text(message.model_dump_json()) 
+    for message in messages:
+        wrapped_message = schemas.wrap_message(message)
+        json_message = wrapped_message.model_dump_json()
+        await websocket.send_text(json_message)
     
     await send_message_deleted_room(room_id, manager, session)
     try:

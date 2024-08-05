@@ -84,6 +84,7 @@ async def fetch_last_messages(rooms: str, limit: int, session: AsyncSession) -> 
     messages = []
     for socket, user, votes in raw_messages:
         decrypted_message = await async_decrypt(socket.message)
+        
         messages.append(
             schemas.SocketModel(
                 created_at=socket.created_at,
