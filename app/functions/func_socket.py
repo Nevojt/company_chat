@@ -259,12 +259,12 @@ async def process_vote(vote: schemas.Vote, session: AsyncSession, current_user: 
             if found_vote:
                 await session.delete(found_vote)
                 await session.commit()
-                return {"message": "Successfully removed vote"}
+                return vote.message_id
             else:
                 new_vote = models.Vote(message_id=vote.message_id, user_id=current_user.id, dir=vote.dir)
                 session.add(new_vote)
                 await session.commit()
-                return {"message": "Successfully added vote"}
+                return vote.message_id
 
         else:
             if not found_vote:
@@ -272,7 +272,7 @@ async def process_vote(vote: schemas.Vote, session: AsyncSession, current_user: 
             
             await session.delete(found_vote)
             await session.commit()
-            return {"message": "Successfully deleted vote"}
+            return vote.message_id
 
     except HTTPException as http_exc:
         logging.error(f"HTTP error occurred: {http_exc.detail}")

@@ -19,13 +19,16 @@ class SocketModel(BaseModel):
     vote: int
     id_return: Optional[int] = None
     edited: bool
-        
+ 
+ # Send message to chat
 class WrappedSocketMessage(BaseModel):
     message: SocketModel        
         
 def wrap_message(socket_model_instance: SocketModel) -> WrappedSocketMessage:
     return WrappedSocketMessage(message=socket_model_instance)
 
+
+# Update message in chat
 class WrappedUpdateMessage(BaseModel):
     update: SocketModel        
         

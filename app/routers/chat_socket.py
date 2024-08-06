@@ -99,15 +99,10 @@ async def websocket_endpoint(
                 try:
                     vote_data = schemas.Vote(**data['vote'])
                     await process_vote(vote_data, session, user)
-                 
-                    messages = await fetch_last_messages(room, limit, session)
-                    
+
+                    message_json = await fetch_one_message(vote_data.message_id, session)
                     for user_id, (connection, _, _, user_room, _) in manager.user_connections.items():
-                        await connection.send_json({"message": "Vote posted "})
-                        if user_room == room:
-                            for message in messages:
-                                await connection.send_text(message.model_dump_json())
-                                
+                        await connection.send_text(message_json)
 
                 except Exception as e:
                     logger.error(f"Error processing vote: {e}", exc_info=True)
@@ -126,8 +121,7 @@ async def websocket_endpoint(
                     
                     for user_id, (connection, _, _, user_room, _) in manager.user_connections.items():
                         await connection.send_text(update_message)
-                       
-                                
+                              
                 except Exception as e:
                     logger.error(f"Error processing change: {e}", exc_info=True)
                     await websocket.send_json({"message": f"Error processing change: {e}"})
