@@ -26,6 +26,13 @@ class WrappedSocketMessage(BaseModel):
 def wrap_message(socket_model_instance: SocketModel) -> WrappedSocketMessage:
     return WrappedSocketMessage(message=socket_model_instance)
 
+class WrappedUpdateMessage(BaseModel):
+    update: SocketModel        
+        
+def wrap_message_update(socket_model_update: SocketModel) -> WrappedUpdateMessage:
+    return WrappedUpdateMessage(update=socket_model_update)
+
+
 class SocketUpdate(BaseModel):
     id: int
     message: str

@@ -103,7 +103,51 @@ async def fetch_last_messages(rooms: str, limit: int, session: AsyncSession) -> 
     messages.reverse()
     return messages
 
+async def fetch_one_message(id: int, session: AsyncSession) -> schemas.SocketModel:
+    """
+    Fetch a single message by its ID and return as a SocketModel object.
+    """
+    query = select(
+        models.Socket, 
+        models.User, 
+        func.coalesce(func.sum(models.Vote.dir), 0).label('votes')
+    ).outerjoin(
+        models.Vote, models.Socket.id == models.Vote.message_id
+    ).outerjoin( 
+        models.User, models.Socket.receiver_id == models.User.id
+    ).filter(
+        models.Socket.id == id
+    ).group_by(
+        models.Socket.id, models.User.id
+    )
+    
+    result = await session.execute(query)
+    raw_message = result.first()
 
+    # Convert raw messages to SocketModel
+    if raw_message:
+        socket, user, votes = raw_message
+        decrypted_message = await async_decrypt(socket.message)
+        
+        message = schemas.SocketModel(
+                created_at=socket.created_at,
+                receiver_id=socket.receiver_id,
+                message=decrypted_message,
+                fileUrl=socket.fileUrl,
+                user_name=user.user_name if user is not None else "Unknown user",
+                avatar=user.avatar if user is not None else "https://tygjaceleczftbswxxei.supabase.co/storage/v1/object/public/image_bucket/inne/image/photo_2024-06-14_19-20-40.jpg",
+                verified=user.verified if user is not None else None,
+                id=socket.id,
+                vote=votes,
+                id_return=socket.id_return,
+                edited=socket.edited
+            )
+        wrapped_message_update = schemas.wrap_message_update(message)
+        return wrapped_message_update.model_dump_json()
+        
+    else:
+        raise HTTPException(status_code=404, detail="Message not found")
+    
 
 async def update_room_for_user(user_id: int, room: str, session: AsyncSession):
     try:
@@ -273,7 +317,6 @@ async def change_message(id_message: int, message_update: schemas.SocketUpdate,
     session.add(message)
     await session.commit()
 
-    return {"message": "Message updated successfully"}
 
 
 async def delete_message(id_message: int,
@@ -306,8 +349,7 @@ async def delete_message(id_message: int,
     await session.delete(message)
     await session.commit()
 
-    return {"message": "Message deleted successfully"}
-
+    return message.id
 
 
 async def online(session: AsyncSession, user_id: int):

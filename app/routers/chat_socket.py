@@ -8,7 +8,7 @@ from app.settings import oauth2
 from ..schemas import schemas
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.functions.func_socket import update_user_status, change_message, fetch_last_messages, update_room_for_user, update_room_for_user_live, process_vote, delete_message
+from app.functions.func_socket import update_user_status, change_message, fetch_last_messages, update_room_for_user, update_room_for_user_live, process_vote, delete_message, fetch_one_message
 from app.functions.func_socket import fetch_room_data, send_message_blocking, ban_user, send_message_mute_user, start_session, end_session, get_room, send_message_deleted_room
 from app.functions.moderator import censor_message, load_banned_words, tag_sayory
 from app.AI import sayory
@@ -114,41 +114,33 @@ async def websocket_endpoint(
                     await websocket.send_json({"message": f"Error processing vote: {e}"})
                     
             # Block change message 
-            elif 'change_message' in data:
+            elif 'update' in data:
                 try:
-                    message_data = schemas.SocketUpdate(**data['change_message'])
+                    message_data = schemas.SocketUpdate(**data['update'])
                     
                     censored_text = censor_message(message_data.message, banned_words)
                     await change_message(message_data.id, schemas.SocketUpdate(id=message_data.id,
                                                                                message=censored_text
-                                                                               ), session, user)
-                    
-                    messages = await fetch_last_messages(room, limit, session)
+                                                                               ), session, user)                 
+                    update_message = await fetch_one_message(message_data.id, session)
                     
                     for user_id, (connection, _, _, user_room, _) in manager.user_connections.items():
-                        await connection.send_json({"message": "Message updated "})
-                        if user_room == room:
-                            for message in messages:
-                                await connection.send_text(message.model_dump_json())
+                        await connection.send_text(update_message)
+                       
                                 
                 except Exception as e:
                     logger.error(f"Error processing change: {e}", exc_info=True)
                     await websocket.send_json({"message": f"Error processing change: {e}"})
             
             # Block delete message       
-            elif 'delete_message' in data:
+            elif 'delete' in data:
                 try:
-                    message_data = schemas.SocketDelete(**data['delete_message'])
-                    await delete_message(message_data.id, session, user)
-                    
-                    messages = await fetch_last_messages(room, limit, session)
+                    message_data = schemas.SocketDelete(**data['delete'])
+                    message_id = await delete_message(message_data.id, session, user)
                     
                     for user_id, (connection, _, _, user_room, _) in manager.user_connections.items():
-                        await connection.send_json({"message": "Message delete"})
-                        if user_room == room:
-                            for message in messages:
-                                await connection.send_text(message.model_dump_json())
-                                
+                        await connection.send_json({"delete": {"id": message_id}})
+
                 except Exception as e:
                     logger.error(f"Error processing delete: {e}", exc_info=True)
                     await websocket.send_json({"message": f"Error processing deleted: {e}"})
