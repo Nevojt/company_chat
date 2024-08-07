@@ -84,8 +84,6 @@ class ConnectionManager:
         timezone = pytz.timezone('UTC')
         current_time_utc = datetime.now(timezone).isoformat()
         file_id = None
-        vote_count = 0
-
 
         if add_to_db:
             file_id = await self.add_all_to_database(file, message, rooms, receiver_id, id_return)
@@ -145,7 +143,6 @@ class ConnectionManager:
         timezone = pytz.timezone('UTC')
         current_time_utc = datetime.now(timezone).isoformat()
         file_id = None
-        vote_count = 0
 
 
         if add_to_db:
