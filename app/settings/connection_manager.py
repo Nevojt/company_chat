@@ -51,7 +51,7 @@ class ConnectionManager:
                 for user_id, user_info in self.user_connections.items()
                 if user_info[3] == room  # Check if the user is in the specified room
             ]
-            message_data = {"type": "active_users", "data": active_users}
+            message_data = {"active_users": active_users}
 
             # Send the message only to users in the specified room
             for websocket, _, _, user_room, _ in self.user_connections.values():

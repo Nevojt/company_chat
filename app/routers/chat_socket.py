@@ -85,7 +85,7 @@ async def websocket_endpoint(
     try:
         while True:
             data = await websocket.receive_json()
-                        # Blok following typing message
+            # Blok following typing message
             if 'type' in data:
                 if not user_baned:
                     await manager.notify_users_typing(room, user.user_name, user.id)
