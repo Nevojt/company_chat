@@ -57,8 +57,7 @@ async def websocket_endpoint(
             logger.info(f"Admin {user.user_name} has accessed the blocked room {room}.")
       
     await update_room_for_user(user.id, room, session)
-    await start_session(user.id, session)
-    
+
     x_real_ip = websocket.headers.get('x-real-ip')
     x_forwarded_for = websocket.headers.get('x-forwarded-for')
 
