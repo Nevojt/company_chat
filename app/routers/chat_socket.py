@@ -31,7 +31,7 @@ manager = ConnectionManager()
 async def websocket_endpoint(
     websocket: WebSocket,
     room_id: int,
-    limit: int = 100,
+    limit: int = 20,
     token: str = '',
     session: AsyncSession = Depends(get_async_session)
     ):
@@ -58,8 +58,7 @@ async def websocket_endpoint(
             logger.info(f"Admin {user.user_name} has accessed the blocked room {room}.")
       
     await update_room_for_user(user.id, room, session)
-    await start_session(user.id, session)
-    
+
     x_real_ip = websocket.headers.get('x-real-ip')
     x_forwarded_for = websocket.headers.get('x-forwarded-for')
 
@@ -90,7 +89,13 @@ async def websocket_endpoint(
                 if not user_baned:
                     await manager.notify_users_typing(room, user.user_name, user.id)
                 continue
-                    
+            
+            if 'limit' in data:
+                limit = data['limit']
+                messages = await fetch_last_messages(room, limit, session)
+                for message in messages:  
+                    await websocket.send_text(message.model_dump_json())
+            
             if user_baned:
                 await send_message_mute_user(room, user, manager, session)  
                 continue
@@ -171,7 +176,9 @@ async def websocket_endpoint(
                                     id_return=original_message_id,
                                     add_to_db=True
                                     )
-                if tag_sayory(censored_message) and censor_message is not None:
+
+                if censor_message is not None and tag_sayory(censored_message):
+
                     response_sayory = await sayory.ask_to_gpt(censored_message)
                     await manager.broadcast_all(
                                     message=response_sayory,

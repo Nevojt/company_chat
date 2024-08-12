@@ -8,6 +8,7 @@ sayori_key=settings.openai_api_key
 client = AsyncOpenAI(
     api_key=sayori_key
 )
+instruction = "Ти асистент в менеджері і твоє ім'я saory далі буде повідомлення від користувача:  "
 
 instruction = "Ти асистент в менеджері і твоє ім'я saory далі буде повідомлення від користувача:  "
 
