@@ -30,7 +30,7 @@ manager = ConnectionManager()
 async def websocket_endpoint(
     websocket: WebSocket,
     room_id: int,
-    limit: int = 100,
+    limit: int = 20,
     token: str = '',
     session: AsyncSession = Depends(get_async_session)
     ):
@@ -86,7 +86,13 @@ async def websocket_endpoint(
                 if not user_baned:
                     await manager.notify_users_typing(room, user.user_name, user.id)
                 continue
-                    
+            
+            if 'limit' in data:
+                limit = data['limit']
+                messages = await fetch_last_messages(room, limit, session)
+                for message in messages:  
+                    await websocket.send_text(message.model_dump_json())
+            
             if user_baned:
                 await send_message_mute_user(room, user, manager, session)  
                 continue
