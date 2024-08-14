@@ -90,9 +90,10 @@ async def websocket_endpoint(
             if 'limit' in data:
                 limit = data['limit']
                 messages = await fetch_last_messages(room, limit, session)
+                await websocket.send_json({"message":"Load older messages"})
                 for message in messages:  
                     await websocket.send_text(message.model_dump_json())
-                    await connection.send_json({"message":"Load older messages"})
+                
 
 
             
