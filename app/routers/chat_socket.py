@@ -93,6 +93,8 @@ async def websocket_endpoint(
                 for message in messages:  
                     await websocket.send_text(message.model_dump_json())
                     await connection.send_json({"message":"Load older messages"})
+
+
             
             if user_baned:
                 await send_message_mute_user(room, user, manager, session)  
