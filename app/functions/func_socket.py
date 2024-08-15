@@ -469,6 +469,20 @@ async def get_room(room_id: int, session: AsyncSession):
 
 
 
+async def count_messages_in_room(room_name: int, session: AsyncSession):
+    
+    count_messages_in_room = select(models.Socket).where(models.Socket.rooms == room_name)
+    result = await session.execute(count_messages_in_room)
+    raw_messages = result.all()
+    
+    count_messages_in_room = len(raw_messages)
+    
+    return count_messages_in_room
+
+
+
+
+
 async def start_session(user_id: int, db: AsyncSession):
     """
     Start a user's online session.
