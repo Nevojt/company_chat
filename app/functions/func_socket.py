@@ -15,7 +15,8 @@ from app.models import models
 import base64
 from cryptography.fernet import Fernet, InvalidToken
 
-# Ініціалізація шифрувальника
+
+# Key for symmetric encryption
 key = settings.key_crypto
 cipher = Fernet(key)
 
@@ -37,6 +38,22 @@ async def async_encrypt(data: str):
     return encoded_string
 
 async def async_decrypt(encoded_data: str):
+    """
+    Decrypts a base64 encoded string using a symmetric encryption algorithm.
+
+    Parameters:
+    encoded_data (str): The base64 encoded string to decrypt.
+
+    Returns:
+    Optional[str]: The decrypted string if decryption is successful.
+    None: If decryption fails due to an invalid token or key mismatch.
+
+    This function first checks if the input data is a valid base64 encoded string.
+    If not, it logs an error message and returns the original encoded data.
+    Then, it attempts to decrypt the encoded data using a symmetric encryption algorithm.
+    If decryption is successful, it returns the decrypted string.
+    If decryption fails due to an invalid token or key mismatch, it logs an error message and returns None.
+    """
     if not is_base64(encoded_data):
         # logger.error(f"Data is not valid base64, returning original data: {encoded_data}")
         return encoded_data
@@ -105,6 +122,24 @@ async def fetch_last_messages(rooms: str, limit: int, session: AsyncSession) -> 
 
 
 async def update_room_for_user(user_id: int, room: str, session: AsyncSession):
+    """
+    Update the room for a user in the database.
+
+    Parameters:
+    user_id (int): The unique identifier of the user.
+    room (str): The name of the room to update.
+    session (AsyncSession): The database session.
+
+    Returns:
+    models.User_Status: The updated user status record.
+
+    This function updates the room for a user in the database.
+    It first retrieves the user's status record from the database using the provided user_id.
+    If the user status record is not found, it raises a 404 Not Found HTTPException.
+    Then, it retrieves the room record from the database using the provided room name.
+    If the room record is not found, it raises a 404 Not Found HTTPException.
+    Finally, it updates the user's status record with the new room information and commits the changes to the database.
+    """
     try:
         user_status_query = select(models.User_Status).where(models.User_Status.user_id == user_id)
         user_status_result = await session.execute(user_status_query)
@@ -116,7 +151,6 @@ async def update_room_for_user(user_id: int, room: str, session: AsyncSession):
                 detail=f"User status with user_id: {user_id} not found"
             )
         
-        # Отримати ідентифікатор кімнати
         room_query = select(models.Rooms).where(models.Rooms.name_room == room)
         room_result = await session.execute(room_query)
         room_record = room_result.scalar()
@@ -126,8 +160,7 @@ async def update_room_for_user(user_id: int, room: str, session: AsyncSession):
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Room with name: {room} not found"
             )
-        
-        # Оновити дані статусу користувача
+
         user_status.name_room = room
         user_status.room_id = room_record.id
         await session.commit()
@@ -315,6 +348,22 @@ async def online(session: AsyncSession, user_id: int):
     return online
 
 async def update_user_status(session: AsyncSession, user_id: int, is_online: bool):
+    """
+    Update a user's online status in the database.
+
+    Parameters:
+    session (AsyncSession): The database session.
+    user_id (int): The unique identifier of the user.
+    is_online (bool): The new online status for the user.
+
+    Returns:
+    None
+
+    This function updates the online status of a user in the database.
+    It uses the provided database session to execute an update query on the User_Status table.
+    The query filters the records based on the user_id and updates the status column with the provided is_online value.
+    If an exception occurs during the update process, it logs the error using the logger.
+    """
     try:
         await session.execute(
             update(models.User_Status)
@@ -329,7 +378,21 @@ async def update_user_status(session: AsyncSession, user_id: int, is_online: boo
         
         
 async def fetch_room_data(room: str, session: AsyncSession):
-    
+    """
+    Fetch room data from the database.
+
+    Parameters:
+    room (str): The name of the room.
+    session (AsyncSession): The database session.
+
+    Returns:
+    models.Rooms: The room data if the room exists in the database.
+    None: If the room does not exist in the database.
+
+    This function retrieves the room data from the database using the provided room name.
+    If the room exists, it returns the room data.
+    If the room does not exist, it returns None.
+    """
     room_query = select(models.Rooms).where(models.Rooms.name_room == room)
     room_result = await session.execute(room_query)
     room_record = room_result.scalar()
@@ -340,95 +403,145 @@ async def fetch_room_data(room: str, session: AsyncSession):
     return room_record
 
 async def send_message_deleted_room(room_id: int, manager: object, session: AsyncSession):
-        
-        user_query = select(models.User).where(models.User.id == 2)
-        user_result = await session.execute(user_query)
-        user = user_result.scalar_one() 
-        
-        if not user:
-            return
-        room_query = select(models.Rooms).where(models.Rooms.id == room_id)
-        room_result = await session.execute(room_query)
-        room = room_result.scalar_one()
-        
-        if room.delete_at:
-            days_to_deletion = room.delete_at + timedelta(days=30) - datetime.now(pytz.utc)
-            if days_to_deletion.days > 0:
-                current_time = datetime.now(pytz.utc).strftime("%Y-%m-%d %H:%M:%S")
-                await manager.broadcast_all(
-                    message=f"😑 This room will be DELETED in {days_to_deletion.days} days. 😑",
-                    file=None,
-                    rooms=room.name_room,
-                    created_at=current_time,
-                    receiver_id=user.id,
-                    user_name=user.user_name,
-                    avatar=user.avatar,
-                    verified=user.verified,
-                    id_return=None,
-                    add_to_db=False
-                )
+    """
+    This function sends a message to all users in a specific room, indicating that the room will be deleted in a certain number of days.
+
+    Parameters:
+    room_id (int): The unique identifier of the room.
+    manager (object): The object responsible for managing messages and broadcasting them.
+    session (AsyncSession): The database session object for executing database queries.
+
+    Returns:
+    None
+
+    This function first retrieves the user object with id 2 from the database.
+    If the user object is not found, the function returns without sending a message.
+    Then, it retrieves the room object with the given room_id from the database.
+    If the room object is not found or the room's delete_at attribute is None, the function returns without sending a message.
+    If the room will be deleted in more than 0 days, the function constructs a message indicating the remaining days.
+    The message is sent to all users in the specified room using the manager's broadcast_all method.
+    """
+    user_query = select(models.User).where(models.User.id == 2)
+    user_result = await session.execute(user_query)
+    user = user_result.scalar_one() 
+    
+    if not user:
+        return
+    room_query = select(models.Rooms).where(models.Rooms.id == room_id)
+    room_result = await session.execute(room_query)
+    room = room_result.scalar_one()
+    
+    if room.delete_at:
+        days_to_deletion = room.delete_at + timedelta(days=30) - datetime.now(pytz.utc)
+        if days_to_deletion.days > 0:
+            current_time = datetime.now(pytz.utc).strftime("%Y-%m-%d %H:%M:%S")
+            await manager.broadcast_all(
+                message=f"😑 This room will be DELETED in {days_to_deletion.days} days. 😑",
+                file=None,
+                rooms=room.name_room,
+                created_at=current_time,
+                receiver_id=user.id,
+                user_name=user.user_name,
+                avatar=user.avatar,
+                verified=user.verified,
+                id_return=None,
+                add_to_db=False
+            )
 
 
 async def send_message_blocking(room: str, manager: object, session: AsyncSession):
-        
-        user_query = select(models.User).where(models.User.id == 2)
-        user_result = await session.execute(user_query)
-        user = user_result.scalar_one() 
-        
-        if not user:
-            return
-        
-        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        await manager.broadcast_all(
-                                message="This chat is temporarily blocked.",
-                                file=None,
-                                rooms=room,
-                                created_at=current_time,
-                                receiver_id=user.id,
-                                user_name=user.user_name,
-                                avatar=user.avatar,
-                                verified=user.verified,
-                                id_return=None,
-                                add_to_db=False
-                            )
-        
+    """
+    This function sends a message to all users in a specific room, indicating that the chat is temporarily blocked.
+
+    Parameters:
+    room (str): The name of the room where the message should be sent.
+    manager (object): The object responsible for managing messages and broadcasting them.
+    session (AsyncSession): The database session object for executing database queries.
+
+    Returns:
+    None
+
+    This function first retrieves the user object with id 2 from the database.
+    If the user object is not found, the function returns without sending a message.
+    Then, it constructs a message indicating that the chat is temporarily blocked.
+    The message is sent to all users in the specified room using the manager's broadcast_all method.
+    """
+    user_query = select(models.User).where(models.User.id == 2)
+    user_result = await session.execute(user_query)
+    user = user_result.scalar_one() 
+    
+    if not user:
+        return
+    
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    await manager.broadcast_all(
+                            message="This chat is temporarily blocked.",
+                            file=None,
+                            rooms=room,
+                            created_at=current_time,
+                            receiver_id=user.id,
+                            user_name=user.user_name,
+                            avatar=user.avatar,
+                            verified=user.verified,
+                            id_return=None,
+                            add_to_db=False
+                        )
+    
 async def send_message_mute_user(room: str, current_user: models.User, manager: object, session: AsyncSession):
-        
-        user_query = select(models.User).where(models.User.id == 2)
-        user_result = await session.execute(user_query)
-        user = user_result.scalar_one() 
-        
-        room_query = select(models.Rooms).where(models.Rooms.name_room == room)
-        room_result = await session.execute(room_query)
-        room_record = room_result.scalar()
-        
-        current_time_utc = datetime.now(pytz.timezone('UTC'))
-        current_time_naive = current_time_utc.replace(tzinfo=None) 
-        ban = select(models.Ban).where(
-            models.Ban.user_id == current_user.id,
-            models.Ban.room_id == room_record.id,
-            models.Ban.end_time > current_time_naive  # Filter baned
+    """
+    This function sends a message to a user when they are muted in a specific room.
+
+    Parameters:
+    room (str): The name of the room where the user is muted.
+    current_user (models.User): The user object representing the muted user.
+    manager (object): The object responsible for managing messages and broadcasting them.
+    session (AsyncSession): The database session object for executing database queries.
+
+    Returns:
+    None
+    """
+
+    # Query to retrieve the user object with id 2
+    user_query = select(models.User).where(models.User.id == 2)
+    user_result = await session.execute(user_query)
+    user = user_result.scalar_one()
+
+    # Query to retrieve the room object with the given name
+    room_query = select(models.Rooms).where(models.Rooms.name_room == room)
+    room_result = await session.execute(room_query)
+    room_record = room_result.scalar()
+
+    # Get the current time in UTC and convert it to naive datetime
+    current_time_utc = datetime.now(pytz.timezone('UTC'))
+    current_time_naive = current_time_utc.replace(tzinfo=None)
+
+    # Query to retrieve the ban record for the muted user in the given room
+    ban = select(models.Ban).where(
+        models.Ban.user_id == current_user.id,
+        models.Ban.room_id == room_record.id,
+        models.Ban.end_time > current_time_naive  # Filter banned
+    )
+    ban_result = await session.execute(ban)
+    ban_record = ban_result.scalar()
+
+    # If a ban record is found, calculate the remaining minutes and send a message to the user
+    if ban_record:
+        minutes = (ban_record.end_time - current_time_naive).total_seconds() / 60
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        await manager.send_message_to_user(
+            message=f"Sorry, but the owner of the room has blocked you. Until the end of the block remained {minutes:.0f} minutes.",
+            file=None,
+            rooms=room,
+            created_at=current_time,
+            receiver_id=user.id,
+            user_id=current_user.id,
+            user_name=user.user_name,
+            avatar=user.avatar,
+            verified=user.verified,
+            id_return=None,
+            add_to_db=False
         )
-        ban_result = await session.execute(ban)
-        ban_record = ban_result.scalar()
-        
-        if ban_record:
-            minutes = (ban_record.end_time - current_time_naive).total_seconds() / 60
-            current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            await manager.send_message_to_user(
-                                message=f"Sorry, but the owner of the room has blocked you. Until the end of the block remained {minutes:.0f} minutes.",
-                                file=None,
-                                rooms=room,
-                                created_at=current_time,
-                                receiver_id=user.id,
-                                user_id=current_user.id,
-                                user_name=user.user_name,
-                                avatar=user.avatar,
-                                verified=user.verified,
-                                id_return=None,
-                                add_to_db=False
-                            )
-        # print("Banned")
+
 
 async def ban_user(room: str, current_user: models.User, session: AsyncSession):
     room_query = select(models.Rooms).where(models.Rooms.name_room == room)
@@ -461,6 +574,19 @@ async def ban_user(room: str, current_user: models.User, session: AsyncSession):
         
         
 async def get_room(room_id: int, session: AsyncSession):
+    """
+    Retrieve the name of a room given its unique identifier.
+
+    Args:
+        room_id (int): The unique identifier of the room.
+        session (AsyncSession): The database session.
+
+    Returns:
+        str: The name of the room.
+
+    This function retrieves the room's name from the database using the provided room_id.
+    If the room does not exist, it returns None.
+    """
     room = select(models.Rooms).where(models.Rooms.id == room_id)
     result = await session.execute(room)
     existing_room = result.scalar_one_or_none()
@@ -470,6 +596,19 @@ async def get_room(room_id: int, session: AsyncSession):
 
 
 async def count_messages_in_room(room_name: int, session: AsyncSession):
+    """
+    Count the number of messages in a specific room.
+
+    Args:
+        room_name (int): The unique identifier of the room.
+        session (AsyncSession): The database session.
+
+    Returns:
+        int: The total number of messages in the specified room.
+
+    This function retrieves all messages from the specified room in the database.
+    It then counts the number of messages and returns the total count.
+    """
     
     count_messages_in_room = select(models.Socket).where(models.Socket.rooms == room_name)
     result = await session.execute(count_messages_in_room)
