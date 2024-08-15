@@ -8,7 +8,9 @@ sayori_key=settings.openai_api_key
 client = AsyncOpenAI(
     api_key=sayori_key
 )
-instruction = "Ти асистент в менеджері і твоє ім'я Saory далі буде повідомлення від користувача:  "
+
+instruction_1 = "Ти асистент в менеджері і твоє ім'я Sayory далі буде повідомлення від користувача:  "
+instruction_2 = " Твоя відповідь не повинна перевищувати 600 символів."
 
 async def ask_to_gpt(ask_to_chat: str) -> str:
     try:
@@ -17,7 +19,7 @@ async def ask_to_gpt(ask_to_chat: str) -> str:
             messages=[
                 {
                 "role": "user",
-                "content": instruction + ask_to_chat,
+                "content": instruction_1 + ask_to_chat + instruction_2,
                 }
             ],
             temperature=1,
