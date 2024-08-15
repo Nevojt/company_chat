@@ -9,7 +9,8 @@ from ..schemas import schemas
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.functions.func_socket import update_user_status, change_message, fetch_last_messages, update_room_for_user, update_room_for_user_live, process_vote, delete_message, fetch_one_message
-from app.functions.func_socket import fetch_room_data, send_message_blocking, ban_user, send_message_mute_user, start_session, end_session, get_room, send_message_deleted_room
+from app.functions.func_socket import fetch_room_data, send_message_blocking, ban_user, send_message_mute_user, start_session, end_session, get_room, send_message_deleted_room, count_messages_in_room
+
 from app.functions.moderator import censor_message, load_banned_words, tag_sayory
 from app.AI import sayory
 
@@ -84,7 +85,7 @@ async def websocket_endpoint(
     try:
         while True:
             data = await websocket.receive_json()
-            # Blok following typing message
+
             if 'type' in data:
                 if not user_baned:
                     await manager.notify_users_typing(room, user.user_name, user.id)
@@ -92,10 +93,24 @@ async def websocket_endpoint(
             
             if 'limit' in data:
                 limit = data['limit']
+
                 messages = await fetch_last_messages(room, limit, session)
                 for message in messages:  
                     await websocket.send_text(message.model_dump_json())
             
+
+                count_messages = await count_messages_in_room(room, session)
+                limit = min(limit, count_messages)
+
+            if limit < count_messages:
+                await websocket.send_json({"message": "Load older messages"})
+            else:
+                await websocket.send_json({"message": "Loading all messages"})
+
+            messages = await fetch_last_messages(room, limit, session)
+            for message in messages:
+                await websocket.send_text(message.model_dump_json())
+
             if user_baned:
                 await send_message_mute_user(room, user, manager, session)  
                 continue
@@ -176,6 +191,7 @@ async def websocket_endpoint(
                                     id_return=original_message_id,
                                     add_to_db=True
                                     )
+
 
                 if censor_message is not None and tag_sayory(censored_message):
 
