@@ -69,7 +69,7 @@ async def websocket_endpoint(
     
     await manager.send_active_users(room)
     
-    
+    count_messages = await count_messages_in_room(room, session)
     # Get the latest notifications
     messages = await fetch_last_messages(room, limit, session)
     await update_user_status(session, user.id, True)
@@ -90,7 +90,7 @@ async def websocket_endpoint(
             
             if 'limit' in data:
                 limit = data['limit']
-                count_messages = await count_messages_in_room(room, session)
+                
                 limit = min(limit, count_messages)
 
             if limit < count_messages:
