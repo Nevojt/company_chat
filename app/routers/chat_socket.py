@@ -78,29 +78,34 @@ async def websocket_endpoint(
         await websocket.send_text(message.model_dump_json()) 
     
     await send_message_deleted_room(room_id, manager, session)
+    current_limit = getattr(session, 'current_limit', 0)
     try:
         while True:
             data = await websocket.receive_json()
 
-                        # Blok following typing message
+             # Blok following typing message
             if 'type' in data:
                 if not user_baned:
                     await manager.notify_users_typing(room, user.user_name, user.id)
                 continue
             
             if 'limit' in data:
-                limit = data['limit']
+                limit_data = data['limit']
                 
-                limit = min(limit, count_messages)
+                if limit_data > current_limit:
+                    current_limit = limit_data
+                
+            
+                limit = min(current_limit, count_messages)
 
-            if limit < count_messages:
-                await websocket.send_json({"message": "Load older messages"})
-            else:
-                await websocket.send_json({"message": "Loading all messages"})
+                if limit < count_messages:
+                    await websocket.send_json({"message": "Load older messages"})
+                else:
+                    await websocket.send_json({"message": "Loading all messages"})
 
-            messages = await fetch_last_messages(room, limit, session)
-            for message in messages:
-                await websocket.send_text(message.model_dump_json())
+                messages = await fetch_last_messages(room, limit, session)
+                for message in messages:
+                    await websocket.send_text(message.model_dump_json())
 
 
             if user_baned:
