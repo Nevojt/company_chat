@@ -1,6 +1,7 @@
+from tkinter import N
 from sqlalchemy import Boolean, Column, DateTime, Integer, Interval, String, ForeignKey, Enum
 from sqlalchemy.sql.expression import text
-from sqlalchemy.sql.sqltypes import TIMESTAMP
+from sqlalchemy.sql.sqltypes import TIMESTAMP, JSON
 from sqlalchemy.orm import relationship
 from datetime import timedelta
 from enum import Enum as PythonEnum
@@ -22,6 +23,7 @@ class Socket(Base):
     id_return = Column(Integer)
     fileUrl = Column(String)
     edited = Column(Boolean, server_default='false')
+    return_message = Column(JSON, server_default=None)
   
 
 

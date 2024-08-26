@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.functions.func_socket import update_user_status, change_message, fetch_last_messages, update_room_for_user, update_room_for_user_live, process_vote, delete_message
 from app.functions.func_socket import fetch_room_data, send_message_blocking, ban_user, send_message_mute_user, start_session, end_session, get_room, send_message_deleted_room, count_messages_in_room
+from app.functions.func_socket import fetch_message_by_id
 from app.functions.moderator import censor_message, load_banned_words, tag_sayory
 from app.AI import sayory
 
@@ -189,7 +190,11 @@ async def websocket_endpoint(
                         "content": "Your message has been modified because it contained obscene language."
                     }  
                     await websocket.send_json(warning_message)
-                
+                if original_message_id:
+                    original_message_info = await fetch_message_by_id(session, original_message_id)
+                else:
+                    original_message_info = None
+                    
                 await manager.broadcast_all(
                                     message=censored_message,
                                     file=file_url,
@@ -200,6 +205,7 @@ async def websocket_endpoint(
                                     avatar=user.avatar,
                                     verified=user.verified,
                                     id_return=original_message_id,
+                                    return_message=original_message_info,
                                     add_to_db=True
                                     )
                 if censor_message is not None and tag_sayory(censored_message):
