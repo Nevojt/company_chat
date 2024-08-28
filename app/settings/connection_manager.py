@@ -75,7 +75,7 @@ class ConnectionManager:
                                 rooms: str, receiver_id: int,
                                 id_return: Optional[int], 
                                 user_name: str, avatar: str, created_at: str, 
-                                verified: bool, return_message: Optional[dict], add_to_db: bool):
+                                verified: bool, add_to_db: bool):
         """
         Sends a message to all active WebSocket connections. If `add_to_db` is True, it also
         adds the message to the database.
@@ -84,11 +84,9 @@ class ConnectionManager:
         timezone = pytz.timezone('UTC')
         current_time_utc = datetime.now(timezone).isoformat()
         file_id = None
-        vote_count = 0
-
 
         if add_to_db:
-            file_id = await self.add_all_to_database(file, message, rooms, receiver_id, id_return, return_message)
+            file_id = await self.add_all_to_database(file, message, rooms, receiver_id, id_return)
             
         if file_id is None:
             file_id = 0
@@ -104,8 +102,8 @@ class ConnectionManager:
             verified=verified,
             avatar=avatar,
             vote=0,
-            edited=False,
-            return_message=return_message
+            edited=False
+           
         )
 
         message_json = socket_message.model_dump_json()
@@ -117,7 +115,7 @@ class ConnectionManager:
 
     @staticmethod
     async def add_all_to_database(fileUrl: Optional[str], message: Optional[str], 
-                                    rooms: str, receiver_id: int, id_message: Optional[int], return_message: Optional[dict]):
+                                    rooms: str, receiver_id: int, id_message: Optional[int]):
         """
         Adds a message to the database asynchronously.
         """
@@ -125,7 +123,7 @@ class ConnectionManager:
         async with async_session_maker() as session:
             stmt = insert(models.Socket).values(fileUrl=fileUrl, message=encrypt_message, 
                                                 rooms=rooms, receiver_id=receiver_id,
-                                                id_return=id_message, return_message=return_message)
+                                                id_return=id_message)
             result =  await session.execute(stmt)
             await session.commit()
             
