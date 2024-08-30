@@ -20,7 +20,8 @@ router = APIRouter(tags=['Authentication'])
 
 
 @router.post('/login', response_model=schemas.Token)
-async def login(user_credentials: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(database.get_async_session)):
+async def login(user_credentials: OAuth2PasswordRequestForm = Depends(),
+                db: AsyncSession = Depends(database.get_async_session)):
     
     """
     OAuth2-compatible token login, get an access token for future requests.
@@ -54,7 +55,7 @@ async def login(user_credentials: OAuth2PasswordRequestForm = Depends(), db: Asy
         if not user or not utils.verify(user_credentials.password, user.password):
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid Credentials")
 
-        access_token = await oauth2.create_access_token(data={"user_id": user.id})
+        access_token = await oauth2.create_access_token(data={"user_id": user.id}, db=db)
 
         # Return the token
         return {"access_token": access_token, "token_type": "bearer"}
