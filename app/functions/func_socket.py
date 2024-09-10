@@ -120,6 +120,13 @@ async def fetch_last_messages(rooms: str, limit: int, session: AsyncSession) -> 
     messages.reverse()
     return messages
 
+async def send_messages_via_websocket(messages, websocket):
+    for message in messages:
+        wrapped_message = schemas.wrap_message(message)
+        json_message = wrapped_message.model_dump_json()
+        await websocket.send_text(json_message)
+    
+    
 async def fetch_one_message(id: int, session: AsyncSession) -> schemas.SocketModel:
     """
     Fetch a single message by its ID and return as a SocketModel object.

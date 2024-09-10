@@ -8,7 +8,7 @@ from app.settings import oauth2
 from ..schemas import schemas
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.functions.func_socket import update_user_status, change_message, fetch_last_messages, update_room_for_user, update_room_for_user_live, process_vote, delete_message, fetch_one_message
+from app.functions.func_socket import update_user_status, change_message, fetch_last_messages, update_room_for_user, update_room_for_user_live, process_vote, delete_message, fetch_one_message, send_messages_via_websocket
 from app.functions.func_socket import fetch_room_data, send_message_blocking, ban_user, send_message_mute_user, start_session, end_session, get_room, send_message_deleted_room, count_messages_in_room
 
 from app.functions.moderator import censor_message, load_banned_words, tag_sayory
@@ -75,13 +75,12 @@ async def websocket_endpoint(
     
     
     # Get the latest notifications
-    messages = await fetch_last_messages(room, limit, session)
     await update_user_status(session, user.id, True)
     
-    for message in messages:
-        wrapped_message = schemas.wrap_message(message)
-        json_message = wrapped_message.model_dump_json()
-        await websocket.send_text(json_message)
+    messages = await fetch_last_messages(room, limit, session)
+
+    await send_messages_via_websocket(messages, websocket)
+
     
     await send_message_deleted_room(room_id, manager, session)
     try:
@@ -97,21 +96,16 @@ async def websocket_endpoint(
                 limit = data['limit']
 
                 messages = await fetch_last_messages(room, limit, session)
-                for message in messages:  
-                    await websocket.send_text(message.model_dump_json())
-            
-
+                
                 count_messages = await count_messages_in_room(room, session)
                 limit = min(limit, count_messages)
 
-            if limit < count_messages:
-                await websocket.send_json({"message": "Load older messages"})
-            else:
-                await websocket.send_json({"message": "Loading all messages"})
+                if limit < count_messages:
+                    await websocket.send_json({"message": "Load older messages"})
+                else:
+                    await websocket.send_json({"message": "Loading all messages"})
 
-            messages = await fetch_last_messages(room, limit, session)
-            for message in messages:
-                await websocket.send_text(message.model_dump_json())
+                await send_messages_via_websocket(messages, websocket)
 
             if user_baned:
                 await send_message_mute_user(room, user, manager, session)  
