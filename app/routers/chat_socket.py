@@ -39,10 +39,12 @@ async def websocket_endpoint(
     
     user = await oauth2.get_current_user(token, session)
     
+    
     if user.blocked:
         await websocket.close(code=1008)
         return 
     room = await get_room(room_id, session)
+    count_messages = await count_messages_in_room(room, session)
     print(room)
     
     room_data = await fetch_room_data(room, session)
