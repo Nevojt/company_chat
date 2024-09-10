@@ -193,19 +193,14 @@ async def update_room_for_user(user_id: int, room: str, session: AsyncSession):
     Finally, it updates the user's status record with the new room information and commits the changes to the database.
     """
     try:
-        user_status_query = select(models.User_Status).where(models.User_Status.user_id == user_id)
-        user_status_result = await session.execute(user_status_query)
-        user_status = user_status_result.scalar()
-
+        user_status = await get_user_status(user_id, session)
         if user_status is None:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"User status with user_id: {user_id} not found"
             )
         
-        room_query = select(models.Rooms).where(models.Rooms.name_room == room)
-        room_result = await session.execute(room_query)
-        room_record = room_result.scalar()
+        room_record = await get_room_by_name(room, session)
         
         if room_record is None:
             raise HTTPException(
@@ -243,9 +238,7 @@ async def update_room_for_user_live(user_id: int, session: AsyncSession):
         HTTPException: If the user status cannot be found or updated.
     """
     try:
-        post_query = select(models.User_Status).where(models.User_Status.user_id == user_id)
-        post_result = await session.execute(post_query)
-        post = post_result.scalar()
+        post = await get_user_status(user_id, session)
 
         if post is None:
             raise HTTPException(
@@ -326,7 +319,7 @@ async def process_vote(vote: schemas.Vote, session: AsyncSession, current_user: 
         
         
         
-async def change_message(id_message: int, message_update: schemas.SocketUpdate,
+async def change_message(message_id: int, message_update: schemas.SocketUpdate,
                          session: AsyncSession, 
                          current_user: models.User):
     """
@@ -345,9 +338,7 @@ async def change_message(id_message: int, message_update: schemas.SocketUpdate,
         HTTPException: If an error occurs while updating the message.
     """
     
-    query = select(models.Socket).where(models.Socket.id == id_message, models.Socket.receiver_id == current_user.id)
-    result = await session.execute(query)
-    message = result.scalar()
+    message = await get_message_by_id(message_id, current_user.id, session)
 
     if message is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Message not found or you don't have permission to edit this message")
@@ -359,7 +350,7 @@ async def change_message(id_message: int, message_update: schemas.SocketUpdate,
 
 
 
-async def delete_message(id_message: int,
+async def delete_message(message_id: int,
                          session: AsyncSession, 
                          current_user: models.User):
     
@@ -377,10 +368,7 @@ async def delete_message(id_message: int,
     Raises:
         HTTPException: If an error occurs while deleting the message.
     """
-    query = select(models.Socket).where(models.Socket.id == id_message, 
-                                        models.Socket.receiver_id == current_user.id)
-    result = await session.execute(query)
-    message = result.scalar()
+    message = await get_message_by_id(message_id, current_user.id, session)
 
     if message is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
@@ -393,8 +381,7 @@ async def delete_message(id_message: int,
 
 
 async def online(session: AsyncSession, user_id: int):
-    online = await session.execute(select(models.User_Status).filter(models.User_Status.user_id == user_id, models.User_Status.status == True))
-    online = online.scalars().all()
+    online = await get_user_status(user_id, session)
     return online
 
 async def update_user_status(session: AsyncSession, user_id: int, is_online: bool):
@@ -443,9 +430,8 @@ async def fetch_room_data(room: str, session: AsyncSession):
     If the room exists, it returns the room data.
     If the room does not exist, it returns None.
     """
-    room_query = select(models.Rooms).where(models.Rooms.name_room == room)
-    room_result = await session.execute(room_query)
-    room_record = room_result.scalar()
+
+    room_record = await get_room_by_name(room, session)
     
     if room_record is None:
         return None
@@ -471,9 +457,8 @@ async def send_message_deleted_room(room_id: int, manager: object, session: Asyn
     If the room will be deleted in more than 0 days, the function constructs a message indicating the remaining days.
     The message is sent to all users in the specified room using the manager's broadcast_all method.
     """
-    user_query = select(models.User).where(models.User.id == 2)
-    user_result = await session.execute(user_query)
-    user = user_result.scalar_one() 
+    
+    user = await get_user_by_id(user_id=2, session=session) 
     
     if not user:
         return
@@ -516,9 +501,7 @@ async def send_message_blocking(room: str, manager: object, session: AsyncSessio
     Then, it constructs a message indicating that the chat is temporarily blocked.
     The message is sent to all users in the specified room using the manager's broadcast_all method.
     """
-    user_query = select(models.User).where(models.User.id == 2)
-    user_result = await session.execute(user_query)
-    user = user_result.scalar_one() 
+    user = await get_user_by_id(user_id=2, session=session)
     
     if not user:
         return
@@ -552,14 +535,10 @@ async def send_message_mute_user(room: str, current_user: models.User, manager: 
     """
 
     # Query to retrieve the user object with id 2
-    user_query = select(models.User).where(models.User.id == 2)
-    user_result = await session.execute(user_query)
-    user = user_result.scalar_one()
+    user = await get_user_by_id(user_id=2, session=session)
 
     # Query to retrieve the room object with the given name
-    room_query = select(models.Rooms).where(models.Rooms.name_room == room)
-    room_result = await session.execute(room_query)
-    room_record = room_result.scalar()
+    room_record = await get_room_by_name(room, session)
 
     # Get the current time in UTC and convert it to naive datetime
     current_time_utc = datetime.now(pytz.timezone('UTC'))
@@ -594,9 +573,10 @@ async def send_message_mute_user(room: str, current_user: models.User, manager: 
 
 
 async def ban_user(room: str, current_user: models.User, session: AsyncSession):
-    room_query = select(models.Rooms).where(models.Rooms.name_room == room)
-    room_result = await session.execute(room_query)
-    room_record = room_result.scalar_one_or_none()
+    # room_query = select(models.Rooms).where(models.Rooms.name_room == room)
+    # room_result = await session.execute(room_query)
+    # room_record = room_result.scalar_one_or_none()
+    room_record = await get_room_by_name(room, session)
     
     if not room_record:
         return
@@ -730,3 +710,31 @@ async def end_session(user_id: int, db: AsyncSession):
         await db.refresh(user_time_record)
     return user_time_record
 
+
+
+# Function for query to database
+async def get_user_status(user_id: int, session: AsyncSession):
+    user_status_query = select(models.User_Status).where(models.User_Status.user_id == user_id)
+    user_status_result = await session.execute(user_status_query)
+    return user_status_result.scalar()
+
+async def get_room_by_name(room_name: str, session: AsyncSession):
+    room_query = select(models.Rooms).where(models.Rooms.name_room == room_name)
+    room_result = await session.execute(room_query)
+    return room_result.scalar()
+
+async def get_vote_for_message(message_id: int, user_id: int, session: AsyncSession):
+    vote_query = select(models.Vote).where(models.Vote.message_id == message_id, models.Vote.user_id == user_id)
+    vote_result = await session.execute(vote_query)
+    return vote_result.scalars().first()
+
+async def get_message_by_id(message_id: int, user_id: int, session: AsyncSession):
+    message_query = select(models.Socket).where(models.Socket.id == message_id, models.Socket.receiver_id == user_id)
+    message_result = await session.execute(message_query)
+    return message_result.scalar()
+
+
+async def get_user_by_id(user_id: int, session: AsyncSession):
+    user_query = select(models.User).where(models.User.id == user_id)
+    user_result = await session.execute(user_query)
+    return user_result.scalar_one_or_none()
