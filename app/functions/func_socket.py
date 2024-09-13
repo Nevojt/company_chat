@@ -646,7 +646,7 @@ async def get_room(room_id: int, session: AsyncSession):
 
 
 
-async def count_messages_in_room(room_name: int, session: AsyncSession):
+async def count_messages_in_room(room_name: str, session: AsyncSession):
     """
     Count the number of messages in a specific room.
 
