@@ -661,13 +661,13 @@ async def count_messages_in_room(room_name: int, session: AsyncSession):
     It then counts the number of messages and returns the total count.
     """
     
-    count_messages_in_room = select(models.Socket).where(models.Socket.rooms == room_name)
-    result = await session.execute(count_messages_in_room)
+    count_messages_in_rooms = select(models.Socket).where(models.Socket.rooms == room_name)
+    result = await session.execute(count_messages_in_rooms)
     raw_messages = result.all()
     
-    count_messages_in_room = len(raw_messages)
+    count_messages_in_rooms = len(raw_messages)
     
-    return count_messages_in_room
+    return count_messages_in_rooms
 
 
 
