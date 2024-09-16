@@ -21,6 +21,7 @@ class SocketModel(BaseModel):
     id_return: Optional[int] = None
     edited: bool
     return_message: Optional[Json] = None
+    delete: bool
         
         
 class SocketReturnMessage(BaseModel):
@@ -40,9 +41,7 @@ class SocketUpdate(BaseModel):
     
 class SocketDelete(BaseModel):
     id: int
-        
-        
-    
+      
 class TokenData(BaseModel):
     id: Optional[int] = None
     

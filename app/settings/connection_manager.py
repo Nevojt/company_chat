@@ -102,7 +102,8 @@ class ConnectionManager:
             verified=verified,
             avatar=avatar,
             vote=0,
-            edited=False
+            edited=False,
+            delete=False
            
         )
 
@@ -163,7 +164,8 @@ class ConnectionManager:
             verified=verified,
             avatar=avatar,
             vote=0,
-            edited=False
+            edited=False,
+            delete=False
         )
 
         message_json = socket_message.model_dump_json()

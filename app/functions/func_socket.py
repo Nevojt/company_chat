@@ -1,5 +1,6 @@
 
 from datetime import datetime, timedelta
+
 import pytz
 import logging
 from fastapi import HTTPException, status
@@ -7,8 +8,7 @@ from app.schemas import schemas
 from app.settings.config import settings
 from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
-from typing import Optional
+
 from sqlalchemy import func, desc, update
 from typing import List
 
@@ -116,7 +116,8 @@ async def fetch_last_messages(rooms: str, limit: int, session: AsyncSession) -> 
                 vote=votes,
                 id_return=socket.id_return,
                 edited=socket.edited,
-                return_message=socket.return_message
+                return_message=socket.return_message,
+                delete=socket.delete
             )
         )
     messages.reverse()
@@ -162,7 +163,8 @@ async def fetch_message_by_id(session: AsyncSession, message_id: int):
             message=decrypted_message,
             fileUrl=socket.fileUrl,
             user_name=user.user_name if user else "USER DELETE",
-            avatar=user.avatar if user else "https://tygjaceleczftbswxxei.supabase.co/storage/v1/object/public/image_bucket/inne/image/boy_1.webp"
+            avatar=user.avatar if user else "https://tygjaceleczftbswxxei.supabase.co/storage/v1/object/public/image_bucket/inne/image/boy_1.webp",
+            delete=socket.delete
         )
 
         return return_message.model_dump_json()
@@ -350,7 +352,10 @@ async def change_message(id_message: int, message_update: schemas.SocketUpdate,
 
     if message is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Message not found or you don't have permission to edit this message")
-
+    
+    if message.delete:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Message has been deleted")
+    
     message.message = message_update.message 
     message.edited = True
     session.add(message)
@@ -386,7 +391,12 @@ async def delete_message(id_message: int,
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
                             detail="Message not found or you don't have permission to delete this message")
 
-    await session.delete(message)
+    message.message = None
+    message.fileUrl = None
+    message.delete = True
+
+    
+    session.add(message)
     await session.commit()
 
     return {"message": "Message deleted successfully"}
@@ -394,11 +404,13 @@ async def delete_message(id_message: int,
 
 
 async def online(session: AsyncSession, user_id: int):
-    online = await session.execute(select(models.User_Status).filter(models.User_Status.user_id == user_id, models.User_Status.status == True))
+    online = await session.execute(select(models.User_Status).filter(models.User_Status.user_id == user_id,
+                                                                     models.User_Status.status == True))
     online = online.scalars().all()
     return online
 
-async def update_user_status(session: AsyncSession, user_id: int, is_online: bool):
+async def update_user_status(session: AsyncSession, 
+                             user_id: int, is_online: bool):
     """
     Update a user's online status in the database.
 
