@@ -172,7 +172,7 @@ async def websocket_endpoint(
                 original_message = message_data['message']
                 file_url = message_data['fileUrl']
                 
-                if original_message != None:
+                if original_message is not None:
                     censored_message = censor_message(original_message, banned_words)
                 else:
                     censored_message = None
