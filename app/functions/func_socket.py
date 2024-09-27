@@ -1,6 +1,5 @@
 
 from datetime import datetime, timedelta
-
 import pytz
 import logging
 from fastapi import HTTPException, status
@@ -8,7 +7,6 @@ from app.schemas import schemas
 from app.settings.config import settings
 from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession
-
 from sqlalchemy import func, desc, update
 from typing import List
 
@@ -115,64 +113,13 @@ async def fetch_last_messages(rooms: str, limit: int, session: AsyncSession) -> 
                 id=socket.id,
                 vote=votes,
                 id_return=socket.id_return,
-                edited=socket.edited,
-                return_message=socket.return_message,
-                delete=socket.delete
+                edited=socket.edited
             )
         )
     messages.reverse()
     return messages
 
 
-async def fetch_message_by_id(session: AsyncSession, message_id: int):
-    """
-    Fetches a message by its ID along with user information and returns it as a SocketReturnMessage object.
-
-    Parameters:
-    session (AsyncSession): The database session to use for querying the database.
-    message_id (int): The ID of the message to fetch.
-
-    Returns:
-    Optional[SocketReturnMessage]: A SocketReturnMessage object representing the message, or None if no message is found.
-    """
-    # Formulate the query
-    message_query = select(
-        models.Socket, 
-        models.User
-    ).outerjoin(
-        models.User, models.Socket.receiver_id == models.User.id
-    ).filter(
-        models.Socket.id == message_id
-    ).group_by(
-        models.Socket.id, models.User.id
-    )
-
-    # Execute the query
-    result = await session.execute(message_query)
-    message_data = result.first()
-
-    if message_data:
-        socket, user = message_data
-        decrypted_message = await async_decrypt(socket.message) if socket.message else None
-
-        # Create a SocketReturnMessage instance
-        return_message = schemas.SocketReturnMessage(
-            created_at=socket.created_at,
-            receiver_id=socket.receiver_id,
-            id=socket.id,
-            message=decrypted_message,
-            fileUrl=socket.fileUrl,
-            user_name=user.user_name if user else "USER DELETE",
-            avatar=user.avatar if user else "https://tygjaceleczftbswxxei.supabase.co/storage/v1/object/public/image_bucket/inne/image/boy_1.webp",
-            delete=socket.delete
-        )
-
-        return return_message.model_dump_json()
-    else:
-        return None
-    
-    
-    
 
 async def update_room_for_user(user_id: int, room: str, session: AsyncSession):
     """
@@ -352,10 +299,7 @@ async def change_message(id_message: int, message_update: schemas.SocketUpdate,
 
     if message is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Message not found or you don't have permission to edit this message")
-    
-    if message.delete:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Message has been deleted")
-    
+
     message.message = message_update.message 
     message.edited = True
     session.add(message)
@@ -391,12 +335,7 @@ async def delete_message(id_message: int,
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
                             detail="Message not found or you don't have permission to delete this message")
 
-    message.message = None
-    message.fileUrl = None
-    message.delete = True
-
-    
-    session.add(message)
+    await session.delete(message)
     await session.commit()
 
     return {"message": "Message deleted successfully"}
@@ -404,13 +343,11 @@ async def delete_message(id_message: int,
 
 
 async def online(session: AsyncSession, user_id: int):
-    online = await session.execute(select(models.User_Status).filter(models.User_Status.user_id == user_id,
-                                                                     models.User_Status.status == True))
+    online = await session.execute(select(models.User_Status).filter(models.User_Status.user_id == user_id, models.User_Status.status == True))
     online = online.scalars().all()
     return online
 
-async def update_user_status(session: AsyncSession, 
-                             user_id: int, is_online: bool):
+async def update_user_status(session: AsyncSession, user_id: int, is_online: bool):
     """
     Update a user's online status in the database.
 
@@ -658,7 +595,7 @@ async def get_room(room_id: int, session: AsyncSession):
 
 
 
-async def count_messages_in_room(room_name: str, session: AsyncSession):
+async def count_messages_in_room(room_name: int, session: AsyncSession):
     """
     Count the number of messages in a specific room.
 
@@ -673,13 +610,13 @@ async def count_messages_in_room(room_name: str, session: AsyncSession):
     It then counts the number of messages and returns the total count.
     """
     
-    count_messages_in_rooms = select(models.Socket).where(models.Socket.rooms == room_name)
-    result = await session.execute(count_messages_in_rooms)
+    count_messages_in_room = select(models.Socket).where(models.Socket.rooms == room_name)
+    result = await session.execute(count_messages_in_room)
     raw_messages = result.all()
     
-    count_messages_in_rooms = len(raw_messages)
+    count_messages_in_room = len(raw_messages)
     
-    return count_messages_in_rooms
+    return count_messages_in_room
 
 
 

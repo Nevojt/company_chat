@@ -9,7 +9,7 @@ from psycopg2.extras import RealDictCursor
 
 Base = declarative_base()
           
-ASINC_SQLALCHEMY_DATABASE_URL = f'postgresql+asyncpg://{settings.database_name}:{settings.database_password}@{settings.database_hostname}:{settings.database_port}/{settings.database_username}'
+ASINC_SQLALCHEMY_DATABASE_URL = f'postgresql+asyncpg://{settings.database_name}:{settings.database_password_company}@{settings.database_hostname_company}:{settings.database_port}/{settings.database_username}'
 
 engine_asinc = create_async_engine(ASINC_SQLALCHEMY_DATABASE_URL)
 async_session_maker = sessionmaker(engine_asinc, class_=AsyncSession, expire_on_commit=False)
@@ -22,8 +22,8 @@ async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
 
 while True:   
     try:
-        conn = psycopg2.connect(host=settings.database_hostname, database=settings.database_name, user=settings.database_username,
-                                password=settings.database_password, cursor_factory=RealDictCursor)
+        conn = psycopg2.connect(host=settings.database_hostname_company, database=settings.database_name, user=settings.database_username,
+                                password=settings.database_password_company, cursor_factory=RealDictCursor)
         cursor = conn.cursor()
         print("Database connection was successful")
         break

@@ -9,7 +9,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.functions.func_socket import update_user_status, change_message, fetch_last_messages, update_room_for_user, update_room_for_user_live, process_vote, delete_message
 from app.functions.func_socket import fetch_room_data, send_message_blocking, ban_user, send_message_mute_user, start_session, end_session, get_room, send_message_deleted_room, count_messages_in_room
-
 from app.functions.moderator import censor_message, load_banned_words, tag_sayory
 from app.AI import sayory
 
@@ -70,7 +69,7 @@ async def websocket_endpoint(
     
     await manager.send_active_users(room)
     
-    count_messages = await count_messages_in_room(room, session)
+    
     # Get the latest notifications
     messages = await fetch_last_messages(room, limit, session)
     await update_user_status(session, user.id, True)
@@ -79,34 +78,29 @@ async def websocket_endpoint(
         await websocket.send_text(message.model_dump_json()) 
     
     await send_message_deleted_room(room_id, manager, session)
-    current_limit = getattr(session, 'current_limit', 0)
     try:
         while True:
             data = await websocket.receive_json()
 
-             # Blok following typing message
+                        # Blok following typing message
             if 'type' in data:
                 if not user_baned:
                     await manager.notify_users_typing(room, user.user_name, user.id)
                 continue
             
             if 'limit' in data:
-                limit_data = data['limit']
-                
-                if limit_data > current_limit:
-                    current_limit = limit_data
-                
-            
-                limit = min(current_limit, count_messages)
+                limit = data['limit']
+                count_messages = await count_messages_in_room(room, session)
+                limit = min(limit, count_messages)
 
-                if limit < count_messages:
-                    await websocket.send_json({"message": "Load older messages"})
-                else:
-                    await websocket.send_json({"message": "Loading all messages"})
+            if limit < count_messages:
+                await websocket.send_json({"message": "Load older messages"})
+            else:
+                await websocket.send_json({"message": "Loading all messages"})
 
-                messages = await fetch_last_messages(room, limit, session)
-                for message in messages:
-                    await websocket.send_text(message.model_dump_json())
+            messages = await fetch_last_messages(room, limit, session)
+            for message in messages:
+                await websocket.send_text(message.model_dump_json())
 
 
             if user_baned:
@@ -190,7 +184,7 @@ async def websocket_endpoint(
                         "content": "Your message has been modified because it contained obscene language."
                     }  
                     await websocket.send_json(warning_message)
-                    
+                
                 await manager.broadcast_all(
                                     message=censored_message,
                                     file=file_url,
