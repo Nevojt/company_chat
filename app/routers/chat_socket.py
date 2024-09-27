@@ -1,5 +1,5 @@
 from datetime import datetime
-import json
+
 import logging
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends
 from app.settings.connection_manager import ConnectionManager
@@ -43,24 +43,24 @@ async def websocket_endpoint(
     if user.blocked:
         await websocket.close(code=1008)
         return 
-    room = await get_room(room_id, session)
-    count_messages = await count_messages_in_room(room, session)
-    print(room)
+    room_name = await get_room(room_id, session)
+    await count_messages_in_room(room_id, session)
+    # print(room)
     
-    room_data = await fetch_room_data(room, session)
-    user_baned = await ban_user(room, user, session)
+    room_data = await fetch_room_data(room_name, session)
+    user_baned = await ban_user(room_name, user, session)
     
-    await manager.connect(websocket, user.id, user.user_name, user.avatar, room, user.verified)
+    await manager.connect(websocket, user.id, user.user_name, user.avatar, room_name, user.verified)
     
     if room_data.block:
         if user.role != 'admin':
-            await send_message_blocking(room, manager, session)
+            await send_message_blocking(room_name, manager, session)
             await websocket.close(code=1008)
             return
         else:
-            logger.info(f"Admin {user.user_name} has accessed the blocked room {room}.")
+            logger.info(f"Admin {user.user_name} has accessed the blocked room {room_name}.")
       
-    await update_room_for_user(user.id, room, session)
+    await update_room_for_user(user.id, room_name, session)
 
     x_real_ip = websocket.headers.get('x-real-ip')
     x_forwarded_for = websocket.headers.get('x-forwarded-for')
@@ -71,13 +71,13 @@ async def websocket_endpoint(
     print(f"X-Real-IP: {x_real_ip}")
     print(f"X-Forwarded-For: {x_forwarded_for}")
     
-    await manager.send_active_users(room)
+    await manager.send_active_users(room_name)
     
     
     # Get the latest notifications
     await update_user_status(session, user.id, True)
     
-    messages = await fetch_last_messages(room, limit, session)
+    messages = await fetch_last_messages(room_name, limit, session)
 
     await send_messages_via_websocket(messages, websocket)
 
@@ -89,15 +89,15 @@ async def websocket_endpoint(
 
             if 'type' in data:
                 if not user_baned:
-                    await manager.notify_users_typing(room, user.user_name, user.id)
+                    await manager.notify_users_typing(room_name, user.user_name, user.id)
                 continue
             
             if 'limit' in data:
                 limit = data['limit']
 
-                messages = await fetch_last_messages(room, limit, session)
+                messages = await fetch_last_messages(room_name, limit, session)
                 
-                count_messages = await count_messages_in_room(room, session)
+                count_messages = await count_messages_in_room(room_id, session)
                 limit = min(limit, count_messages)
 
                 if limit < count_messages:
@@ -108,7 +108,7 @@ async def websocket_endpoint(
                 await send_messages_via_websocket(messages, websocket)
 
             if user_baned:
-                await send_message_mute_user(room, user, manager, session)  
+                await send_message_mute_user(room_name, user, manager, session)
                 continue
             # Created likes
             if 'vote' in data:
@@ -162,7 +162,7 @@ async def websocket_endpoint(
                 original_message = message_data['message']
                 file_url = message_data['fileUrl']
                 
-                if original_message != None:
+                if original_message is not None:
                     censored_message = censor_message(original_message, banned_words)
                 else:
                     censored_message = None
@@ -178,7 +178,7 @@ async def websocket_endpoint(
                 await manager.broadcast_all(
                                     message=censored_message,
                                     file=file_url,
-                                    rooms=room,
+                                    rooms=room_name,
                                     created_at=current_time,
                                     receiver_id=user.id,
                                     user_name=user.user_name,
@@ -195,7 +195,7 @@ async def websocket_endpoint(
                     await manager.broadcast_all(
                                     message=response_sayory,
                                     file=file_url,
-                                    rooms=room,
+                                    rooms=room_name,
                                     created_at=current_time,
                                     receiver_id=2,
                                     user_name="SayOry",
@@ -214,6 +214,6 @@ async def websocket_endpoint(
         await update_room_for_user(user.id, 'Hell', session)
         await update_user_status(session, user.id, False)
         await update_room_for_user_live(user.id, session)
-        await manager.send_active_users(room)
+        await manager.send_active_users(room_name)
         await session.close()
         print("Session closed")
