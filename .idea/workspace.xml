@@ -5,15 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4ee1ecfe-c64d-4381-bed1-a6f6858ee21c" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/chat.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/functions/func_socket.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/functions/func_socket.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/routers/chat_socket.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/routers/chat_socket.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/settings/database.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/settings/database.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -53,7 +46,7 @@
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "Merging master",
+    "git-widget-placeholder": "master",
     "last_opened_file_path": "/home/dmytro/company/chat",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
@@ -86,6 +79,7 @@
       <workItem from="1727501536847" duration="999000" />
       <workItem from="1727502542572" duration="203000" />
       <workItem from="1727522061829" duration="115000" />
+      <workItem from="1727522182013" duration="461000" />
     </task>
     <servers />
   </component>

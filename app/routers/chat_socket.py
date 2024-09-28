@@ -95,7 +95,7 @@ async def websocket_endpoint(
 
                 messages = await fetch_last_messages(room_name, limit, session)
 
-                count_messages = await count_messages_in_room(room_id, session)
+                count_messages = await count_messages_in_room(room_name, session)
                 limit = min(limit, count_messages)
 
                 if limit < count_messages:
