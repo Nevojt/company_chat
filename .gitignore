@@ -40,7 +40,9 @@ pip-delete-this-directory.txt
 
 
 # castom
-start_uvicorn
+chat_venv
+.idea
+.env
 # Unit test / coverage reports
 htmlcov/
 .tox/

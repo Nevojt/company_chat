@@ -1,11 +1,12 @@
 import logging
+from typing import Annotated
 from fastapi import APIRouter, Depends, status, HTTPException
 from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
-from ..settings import database, oauth2
+from ..settings import oauth2, database
 
 from ..schemas import schemas
 
@@ -13,15 +14,15 @@ from ..models import models
 
 from ..settings import utils
 
-logging.basicConfig(filename='_log/authentication.log', format='%(asctime)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
+# logging.basicConfig(filename='_log/authentication.log', format='%(asctime)s - %(levelname)s - %(message)s')
+# logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=['Authentication'])
 
 
 @router.post('/login', response_model=schemas.Token)
-async def login(user_credentials: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(database.get_async_session)):
-    
+async def login(user_credentials: Annotated[OAuth2PasswordRequestForm, Depends()],
+                db: AsyncSession = Depends(database.get_async_session)):
     """
     OAuth2-compatible token login, get an access token for future requests.
 
@@ -42,28 +43,41 @@ async def login(user_credentials: OAuth2PasswordRequestForm = Depends(), db: Asy
     - Generates an access token using the user's ID.
     - Returns the access token and the token type as a JSON object.
     """
-
     try:
         query = select(models.User).where(models.User.email == user_credentials.username)
         result = await db.execute(query)
         user = result.scalar_one_or_none()
-        
-        if user.blocked == True:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User is blocked")
-        
-        if not user or not utils.verify(user_credentials.password, user.password):
+
+        print(user.active)
+
+        if not user:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid Credentials")
 
-        access_token = await oauth2.create_access_token(data={"user_id": user.id})
+        if user.blocked:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                                detail=f"User with ID {user.id} is blocked")
+        if not user.active:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                                detail=f"User with ID {user.id} is not active")
+
+        if not utils.verify(user_credentials.password, user.password):
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid Credentials")
+
+        access_token = await oauth2.create_access_token(data={"user_id": user.id}, db=db)
 
         # Return the token
-        return {"access_token": access_token, "token_type": "bearer"}
-    except HTTPException as exc_info:
-        logging.error(f"Error login user {exc_info}")
+        return {
+            "access_token": access_token,
+            "token_type": "bearer"}
+
+    except HTTPException as ex_error:
+        # logger.error(f"Error processing Authentication {ex_error}", exc_info=True)
         # Re-raise HTTPExceptions without modification
         raise
     except Exception as e:
         # Log the exception or handle it as you see fit
+        # logger.error(f"An error occurred: Authentication {e}", exc_info=True)
         print(f"An error occurred: {e}")
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An error occurred while processing the request.")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                            detail="An error occurred while processing the request.")
 
