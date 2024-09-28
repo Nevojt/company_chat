@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<module version="4">
-  <component name="PyDocumentationSettings">
-    <option name="format" value="GOOGLE" />
-    <option name="myDocStringFormat" value="Google" />
+<module name="PyDocumentationSettings" version="4">
+  <component name="NewModuleRootManager">
+    <orderEntry type="jdk" jdkName="Python 3.12 (chat)" jdkType="Python SDK" />
+    <orderEntry type="sourceFolder" forTests="false" />
   </component>
 </module>

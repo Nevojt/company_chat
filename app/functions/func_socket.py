@@ -620,12 +620,13 @@ async def get_room(room_id: int, session: AsyncSession):
     room = select(models.Rooms).where(models.Rooms.id == room_id)
     result = await session.execute(room)
     existing_room = result.scalar_one_or_none()
+    print(existing_room.name_room)
     return existing_room.name_room
 
 
 
 
-async def count_messages_in_room(room_name: int, session: AsyncSession):
+async def count_messages_in_room(room_name: str, session: AsyncSession):
     """
     Count the number of messages in a specific room.
 
@@ -640,13 +641,13 @@ async def count_messages_in_room(room_name: int, session: AsyncSession):
     It then counts the number of messages and returns the total count.
     """
     
-    count_messages_in_room = select(models.Socket).where(models.Socket.rooms == room_name)
-    result = await session.execute(count_messages_in_room)
+    count_messages = select(models.Socket).where(models.Socket.rooms == room_name)
+    result = await session.execute(count_messages)
     raw_messages = result.all()
     
-    count_messages_in_room = len(raw_messages)
+    count_messages = len(raw_messages)
     
-    return count_messages_in_room
+    return count_messages
 
 
 
