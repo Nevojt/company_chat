@@ -29,6 +29,6 @@ while True:
         break
 
     except Exception as error:
-            print('Conection to database failed')
+            print('Connection to database failed')
             print("Error:",  error)
             time.sleep(2)
