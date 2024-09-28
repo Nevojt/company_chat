@@ -26,6 +26,7 @@ share/python-wheels/
 *.egg
 MANIFEST
 start_app
+chat_venv
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
