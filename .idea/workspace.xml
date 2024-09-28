@@ -5,8 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4ee1ecfe-c64d-4381-bed1-a6f6858ee21c" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.github/workflows/company.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/public.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/routers/chat_socket.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/routers/chat_socket.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -28,12 +28,12 @@
     &quot;assignee&quot;: &quot;Nevojt&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings">{
-  &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;git@github.com:Nevojt/company_chat.git&quot;,
-    &quot;accountId&quot;: &quot;27dda6e7-2525-4c28-993a-d8a0e8750c16&quot;
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "git@github.com:Nevojt/company_chat.git",
+    "accountId": "0fd1484d-2255-4912-b235-355540448ca4"
   }
-}</component>
+}]]></component>
   <component name="ProjectColorInfo">{
   &quot;customColor&quot;: &quot;&quot;,
   &quot;associatedIndex&quot;: 6
@@ -53,7 +53,7 @@
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "preferences.pluginManager",
+    "settings.editor.selected.configurable": "org.jetbrains.plugins.github.ui.GithubSettingsConfigurable",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
@@ -79,7 +79,7 @@
       <workItem from="1727501536847" duration="999000" />
       <workItem from="1727502542572" duration="203000" />
       <workItem from="1727522061829" duration="115000" />
-      <workItem from="1727522182013" duration="461000" />
+      <workItem from="1727522182013" duration="825000" />
     </task>
     <servers />
   </component>
@@ -112,4 +112,16 @@
       </map>
     </option>
   </component>
+  <component name="WfRunsListSearchHistory"><![CDATA[{
+  "history": [
+    {
+      "branch": "master",
+      "currentBranchFilter": true
+    }
+  ],
+  "lastFilter": {
+    "branch": "master",
+    "currentBranchFilter": true
+  }
+}]]></component>
 </project>

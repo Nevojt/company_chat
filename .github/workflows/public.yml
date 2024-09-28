@@ -3,7 +3,7 @@ name: Deploy Chat
 on:
   push:
     branches:
-      - company
+      - master
 
 jobs:
   build-and-deploy:
@@ -11,10 +11,10 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v5
       with:
         python-version: '3.x'
 
@@ -28,9 +28,9 @@ jobs:
 
     - name: Deploy to Server
       env:
-        SSH_PASSWORD: ${{ secrets.SSH_PASSWORD_COMPANY }}
-        SSH_HOST: ${{ secrets.SSH_HOST_COMPANY }}
-        SSH_USER: ${{ secrets.SSH_USER_COMPANY }}
+        SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
+        SSH_HOST: ${{ secrets.SSH_HOST }}
+        SSH_USER: ${{ secrets.SSH_USER }}
       run: |
         sshpass -p $SSH_PASSWORD ssh -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "
         cd /home/$SSH_USER/chat && \
