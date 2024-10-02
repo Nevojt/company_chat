@@ -19,6 +19,7 @@ class SocketModel(BaseModel):
     vote: int
     id_return: Optional[int] = None
     edited: bool
+    delete: bool
  
  # Send message to chat
 class WrappedSocketMessage(BaseModel):

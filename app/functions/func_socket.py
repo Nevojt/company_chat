@@ -114,7 +114,8 @@ async def fetch_last_messages(rooms: str, limit: int, session: AsyncSession) -> 
                 id=socket.id,
                 vote=votes,
                 id_return=socket.id_return,
-                edited=socket.edited
+                edited=socket.edited,
+                delete=socket.delete
             )
         )
     messages.reverse()
@@ -164,7 +165,8 @@ async def fetch_one_message(id: int, session: AsyncSession) -> schemas.SocketMod
                 id=socket.id,
                 vote=votes,
                 id_return=socket.id_return,
-                edited=socket.edited
+                edited=socket.edited,
+                delete=socket.delete
             )
         wrapped_message_update = schemas.wrap_message_update(message)
         return wrapped_message_update.model_dump_json()
@@ -326,7 +328,7 @@ async def change_message(message_id: int, message_update: schemas.SocketUpdate,
     This function updates a message in the database.
 
     Parameters:
-        id_message (int): The ID of the message to update.
+        message_id (int): The ID of the message to update.
         message_update (schemas.SocketUpdate): The updated message information.
         session (AsyncSession): The database session.
         current_user (models.User): The current user.
