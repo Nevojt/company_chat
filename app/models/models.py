@@ -23,6 +23,7 @@ class Socket(Base):
     id_return = Column(Integer)
     fileUrl = Column(String)
     edited = Column(Boolean, server_default='false')
+    delete = Column(Boolean, server_default='false')
   
 
 

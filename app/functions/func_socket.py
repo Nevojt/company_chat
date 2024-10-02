@@ -622,7 +622,7 @@ async def get_room(room_id: int, session: AsyncSession):
     room = select(models.Rooms).where(models.Rooms.id == room_id)
     result = await session.execute(room)
     existing_room = result.scalar_one_or_none()
-    print(existing_room.name_room)
+
     return existing_room.name_room
 
 
