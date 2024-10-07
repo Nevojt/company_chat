@@ -144,10 +144,11 @@ async def websocket_endpoint(
             elif 'delete' in data:
                 try:
                     message_data = schemas.SocketDelete(**data['delete'])
-                    message_id = await delete_message(message_data.id, session, user)
+                    await delete_message(message_data.id, session, user)
+                    return_message = await fetch_one_message(message_data.id, session)
 
                     for user_id, (connection, _, _, user_room, _) in manager.user_connections.items():
-                        await connection.send_json({"deleted": {"id": message_id}})
+                        await connection.send_text(return_message)
 
                 except Exception as e:
                     logger.error(f"Error processing deleted: {e}", exc_info=True)

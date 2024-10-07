@@ -274,11 +274,11 @@ async def process_vote(vote: schemas.Vote, session: AsyncSession, current_user: 
         HTTPException: If an error occurs while processing the vote.
     """
     try:
+
         if vote.message_id == 0:
             return
         
-        result = await session.execute(select(models.Socket).filter(models.Socket.id == vote.message_id))
-        message = result.scalars().first()
+        message = await get_message_by_id(vote.message_id, current_user.id, session)
         
         if not message:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
@@ -383,16 +383,26 @@ async def delete_message(message_id: int,
     if message is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
                             detail="Message not found or you don't have permission to delete this message")
+    if message.deleted:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You cannot edit a deleted message")
 
     message.message = None
     message.fileUrl = None
     message.id_return = None
     message.deleted = True
 
+    vote_result = await session.execute(select(models.Vote).filter(
+        models.Vote.message_id == message_id,
+        models.Vote.user_id == current_user.id
+    ))
+    found_vote = vote_result.scalars().all()
+    for vote in found_vote:
+        await session.delete(vote)
+
     session.add(message)
     await session.commit()
 
-    return message.id
+    # return message
 
 
 async def online(session: AsyncSession, user_id: int):
