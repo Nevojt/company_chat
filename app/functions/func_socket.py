@@ -115,7 +115,7 @@ async def fetch_last_messages(rooms: str, limit: int, session: AsyncSession) -> 
                 vote=votes,
                 id_return=socket.id_return,
                 edited=socket.edited,
-                delete=socket.delete
+                deleted=socket.deleted
             )
         )
     messages.reverse()
@@ -166,7 +166,7 @@ async def fetch_one_message(id: int, session: AsyncSession) -> schemas.SocketMod
                 vote=votes,
                 id_return=socket.id_return,
                 edited=socket.edited,
-                delete=socket.delete
+                deleted=socket.deleted
             )
         wrapped_message_update = schemas.wrap_message_update(message)
         return wrapped_message_update.model_dump_json()
@@ -283,6 +283,10 @@ async def process_vote(vote: schemas.Vote, session: AsyncSession, current_user: 
         if not message:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                                 detail=f"Message with id: {vote.message_id} does not exist")
+
+        if message.deleted:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                                detail="Cannot vote on a deleted message")
         
         vote_result = await session.execute(select(models.Vote).filter(
             models.Vote.message_id == vote.message_id, 
@@ -345,6 +349,10 @@ async def change_message(message_id: int, message_update: schemas.SocketUpdate,
     if message is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Message not found or you don't have permission to edit this message")
 
+    if message.deleted:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You cannot edit a deleted message")
+
+
     message.message = message_update.message 
     message.edited = True
     session.add(message)
@@ -360,7 +368,7 @@ async def delete_message(message_id: int,
     Delete a message from the database.
 
     Args:
-        id_message (int): The ID of the message to delete.
+        message_id (int): The ID of the message to delete.
         session (AsyncSession): The database session.
         current_user (models.User): The current user.
 
@@ -376,15 +384,20 @@ async def delete_message(message_id: int,
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
                             detail="Message not found or you don't have permission to delete this message")
 
-    await session.delete(message)
+    message.message = None
+    message.fileUrl = None
+    message.id_return = None
+    message.deleted = True
+
+    session.add(message)
     await session.commit()
 
     return message.id
 
 
 async def online(session: AsyncSession, user_id: int):
-    online = await get_user_status(user_id, session)
-    return online
+    return await get_user_status(user_id, session)
+
 
 async def update_user_status(session: AsyncSession, user_id: int, is_online: bool):
     """
@@ -440,7 +453,8 @@ async def fetch_room_data(room: str, session: AsyncSession):
     
     return room_record
 
-async def send_message_deleted_room(room_id: int, manager: object, session: AsyncSession):
+async def send_message_deleted_room(room_id: int, manager: object,
+                                    session: AsyncSession):
     """
     This function sends a message to all users in a specific room, indicating that the room will be deleted in a certain number of days.
 
@@ -486,7 +500,8 @@ async def send_message_deleted_room(room_id: int, manager: object, session: Asyn
             )
 
 
-async def send_message_blocking(room: str, manager: object, session: AsyncSession):
+async def send_message_blocking(room: str, manager: object,
+                                session: AsyncSession):
     """
     This function sends a message to all users in a specific room, indicating that the chat is temporarily blocked.
 
@@ -522,7 +537,8 @@ async def send_message_blocking(room: str, manager: object, session: AsyncSessio
                             add_to_db=False
                         )
     
-async def send_message_mute_user(room: str, current_user: models.User, manager: object, session: AsyncSession):
+async def send_message_mute_user(room: str, current_user: models.User,
+                                 manager: object, session: AsyncSession):
     """
     This function sends a message to a user when they are muted in a specific room.
 

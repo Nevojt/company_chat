@@ -104,7 +104,7 @@ class ConnectionManager:
             avatar=avatar,
             vote=0,
             edited=False,
-            delete=False
+            deleted=False
         )
 
         wrapped_message = schemas.wrap_message(socket_message)
@@ -116,14 +116,14 @@ class ConnectionManager:
                 await connection.send_text(message_json)
 
     @staticmethod
-    async def add_all_to_database(fileUrl: Optional[str], message: Optional[str], 
+    async def add_all_to_database(fileUrl: Optional[str], message: Optional[str],
                                     rooms: str, receiver_id: int, id_message: Optional[int]):
         """
         Adds a message to the database asynchronously.
         """
         encrypt_message = await async_encrypt(message)
         async with async_session_maker() as session:
-            stmt = insert(models.Socket).values(fileUrl=fileUrl, message=encrypt_message, 
+            stmt = insert(models.Socket).values(fileUrl=fileUrl, message=encrypt_message,
                                                 rooms=rooms, receiver_id=receiver_id,
                                                 id_return=id_message)
             result =  await session.execute(stmt)
@@ -165,7 +165,7 @@ class ConnectionManager:
             avatar=avatar,
             vote=0,
             edited=False,
-            delete=False
+            deleted=False
         )
 
         message_json = socket_message.model_dump_json()

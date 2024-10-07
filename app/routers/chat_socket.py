@@ -99,9 +99,9 @@ async def websocket_endpoint(
                 limit = min(limit, count_messages)
 
                 if limit < count_messages:
-                    await websocket.send_json({"message": "Load older messages"})
+                    await websocket.send_json({"notice": "Load older messages"})
                 else:
-                    await websocket.send_json({"message": "Loading all messages"})
+                    await websocket.send_json({"notice": "Loading all messages"})
 
                 await send_messages_via_websocket(messages, websocket)
 
@@ -120,7 +120,7 @@ async def websocket_endpoint(
 
                 except Exception as e:
                     logger.error(f"Error processing vote: {e}", exc_info=True)
-                    await websocket.send_json({"message": f"Error processing vote: {e}"})
+                    await websocket.send_json({"notice": f"Error processing vote: {e}"})
 
             # Block change message
             elif 'update' in data:
@@ -138,7 +138,7 @@ async def websocket_endpoint(
 
                 except Exception as e:
                     logger.error(f"Error processing change: {e}", exc_info=True)
-                    await websocket.send_json({"message": f"Error processing change: {e}"})
+                    await websocket.send_json({"notice": f"Error processing change: {e}"})
 
             # Block delete message
             elif 'delete' in data:
@@ -147,11 +147,11 @@ async def websocket_endpoint(
                     message_id = await delete_message(message_data.id, session, user)
 
                     for user_id, (connection, _, _, user_room, _) in manager.user_connections.items():
-                        await connection.send_json({"delete": {"id": message_id}})
+                        await connection.send_json({"deleted": {"id": message_id}})
 
                 except Exception as e:
-                    logger.error(f"Error processing delete: {e}", exc_info=True)
-                    await websocket.send_json({"message": f"Error processing deleted: {e}"})
+                    logger.error(f"Error processing deleted: {e}", exc_info=True)
+                    await websocket.send_json({"notice": f"Error processing deleted: {e}"})
 
             # Block send message
             elif 'send' in data:
