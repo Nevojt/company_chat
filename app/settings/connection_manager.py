@@ -2,6 +2,7 @@ from datetime import datetime
 import pytz
 import logging
 from fastapi import WebSocket
+
 from app.settings.database import async_session_maker
 from app.models import models
 from app.schemas import schemas
@@ -102,7 +103,8 @@ class ConnectionManager:
             verified=verified,
             avatar=avatar,
             vote=0,
-            edited=False
+            edited=False,
+            delete=False
         )
 
         wrapped_message = schemas.wrap_message(socket_message)
@@ -162,7 +164,8 @@ class ConnectionManager:
             verified=verified,
             avatar=avatar,
             vote=0,
-            edited=False
+            edited=False,
+            delete=False
         )
 
         message_json = socket_message.model_dump_json()
