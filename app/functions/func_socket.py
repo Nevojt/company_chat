@@ -277,8 +277,9 @@ async def process_vote(vote: schemas.Vote, session: AsyncSession, current_user: 
 
         if vote.message_id == 0:
             return
-        
-        message = await get_message_by_id(vote.message_id, current_user.id, session)
+
+        result = await session.execute(select(models.Socket).filter(models.Socket.id == vote.message_id))
+        message = result.scalars().first()
         
         if not message:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
