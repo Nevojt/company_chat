@@ -24,6 +24,7 @@ class Socket(Base):
     fileUrl = Column(String)
     edited = Column(Boolean, server_default='false')
     deleted = Column(Boolean, server_default='false')
+    room_id = Column(Integer, ForeignKey('rooms.id', ondelete='CASCADE'))
   
 
 

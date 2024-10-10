@@ -115,7 +115,8 @@ async def fetch_last_messages(rooms: str, limit: int, session: AsyncSession) -> 
                 vote=votes,
                 id_return=socket.id_return,
                 edited=socket.edited,
-                deleted=socket.deleted
+                deleted=socket.deleted,
+                room_id=socket.room_id
             )
         )
     messages.reverse()
@@ -166,7 +167,8 @@ async def fetch_one_message(id: int, session: AsyncSession) -> schemas.SocketMod
                 vote=votes,
                 id_return=socket.id_return,
                 edited=socket.edited,
-                deleted=socket.deleted
+                deleted=socket.deleted,
+                room_id=socket.room_id
             )
         wrapped_message_update = schemas.wrap_message_update(message)
         return wrapped_message_update.model_dump_json()

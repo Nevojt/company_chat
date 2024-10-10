@@ -15,6 +15,8 @@ class Settings(BaseSettings):
     key_crypto: str
     openai_api_key: str
 
+    sentry_url: str
+
     model_config = SettingsConfigDict(env_file = ".env")
 
 

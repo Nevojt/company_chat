@@ -184,6 +184,7 @@ async def websocket_endpoint(
                     avatar=user.avatar,
                     verified=user.verified,
                     id_return=original_message_id,
+                    room_id=room_id,
                     add_to_db=True
                 )
 
@@ -199,6 +200,7 @@ async def websocket_endpoint(
                         avatar="https://tygjaceleczftbswxxei.supabase.co/storage/v1/object/public/image_bucket/inne/image/girl_5.webp",
                         verified=True,
                         id_return=original_message_id,
+                        room_id=room_id,
                         add_to_db=True
                     )
 

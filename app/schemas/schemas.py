@@ -20,6 +20,7 @@ class SocketModel(BaseModel):
     id_return: Optional[int] = None
     edited: bool
     deleted: bool
+    room_id: Optional[int] = None
  
  # Send message to chat
 class WrappedSocketMessage(BaseModel):

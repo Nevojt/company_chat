@@ -76,7 +76,7 @@ class ConnectionManager:
                                 rooms: str, receiver_id: int,
                                 id_return: Optional[int], 
                                 user_name: str, avatar: str, created_at: str, 
-                                verified: bool, add_to_db: bool):
+                                verified: bool, room_id: int, add_to_db: bool):
         """
         Sends a message to all active WebSocket connections. If `add_to_db` is True, it also
         adds the message to the database.
@@ -87,7 +87,7 @@ class ConnectionManager:
         file_id = None
 
         if add_to_db:
-            file_id = await self.add_all_to_database(file, message, rooms, receiver_id, id_return)
+            file_id = await self.add_all_to_database(file, message, rooms, receiver_id, id_return, room_id)
             
         if file_id is None:
             file_id = 0
@@ -104,7 +104,8 @@ class ConnectionManager:
             avatar=avatar,
             vote=0,
             edited=False,
-            deleted=False
+            deleted=False,
+            room_id=room_id
         )
 
         wrapped_message = schemas.wrap_message(socket_message)
@@ -117,7 +118,8 @@ class ConnectionManager:
 
     @staticmethod
     async def add_all_to_database(fileUrl: Optional[str], message: Optional[str],
-                                    rooms: str, receiver_id: int, id_message: Optional[int]):
+                                rooms: str, receiver_id: int, id_message: Optional[int],
+                                room_id: Optional[int]):
         """
         Adds a message to the database asynchronously.
         """
@@ -125,7 +127,7 @@ class ConnectionManager:
         async with async_session_maker() as session:
             stmt = insert(models.Socket).values(fileUrl=fileUrl, message=encrypt_message,
                                                 rooms=rooms, receiver_id=receiver_id,
-                                                id_return=id_message)
+                                                id_return=id_message, room_id=room_id)
             result =  await session.execute(stmt)
             await session.commit()
             
@@ -136,7 +138,7 @@ class ConnectionManager:
                                 rooms: str, receiver_id: int,
                                 id_return: Optional[int], 
                                 user_name: str, avatar: str, created_at: str, 
-                                verified: bool, add_to_db: bool):
+                                verified: bool, room_id: int, add_to_db: bool):
         """
         Sends a message to all active WebSocket connections. If `add_to_db` is True, it also
         adds the message to the database.
@@ -165,7 +167,8 @@ class ConnectionManager:
             avatar=avatar,
             vote=0,
             edited=False,
-            deleted=False
+            deleted=False,
+            room_id=room_id
         )
 
         message_json = socket_message.model_dump_json()
