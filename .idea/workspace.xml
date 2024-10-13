@@ -4,9 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4ee1ecfe-c64d-4381-bed1-a6f6858ee21c" name="Changes" comment="add room id to socket functions">
+    <list default="true" id="4ee1ecfe-c64d-4381-bed1-a6f6858ee21c" name="Changes" comment="return delete func">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/routers/chat_socket.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/routers/chat_socket.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/functions/func_socket.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/functions/func_socket.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -43,21 +43,21 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Python.chat_socket.executor&quot;: &quot;Debug&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/dmytro/company/api&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;org.jetbrains.plugins.github.ui.GithubSettingsConfigurable&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Python.chat_socket.executor": "Debug",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "master",
+    "last_opened_file_path": "/home/dmytro/company/api",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "advanced.settings",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
@@ -93,7 +93,8 @@
       <workItem from="1728497524233" duration="8000" />
       <workItem from="1728586915242" duration="1155000" />
       <workItem from="1728664949822" duration="8000" />
-      <workItem from="1728831207796" duration="155000" />
+      <workItem from="1728831207796" duration="592000" />
+      <workItem from="1728831906149" duration="2537000" />
     </task>
     <task id="LOCAL-00001" summary="Update Message">
       <option name="closed" value="true" />
@@ -135,7 +136,15 @@
       <option name="project" value="LOCAL" />
       <updated>1728587916685</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="return delete func">
+      <option name="closed" value="true" />
+      <created>1728831419123</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1728831419123</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -173,7 +182,8 @@
     <MESSAGE value="Update deleted Vote and deleted" />
     <MESSAGE value="BugFix Vote" />
     <MESSAGE value="add room id to socket functions" />
-    <option name="LAST_COMMIT_MESSAGE" value="add room id to socket functions" />
+    <MESSAGE value="return delete func" />
+    <option name="LAST_COMMIT_MESSAGE" value="return delete func" />
   </component>
   <component name="WfRunsListSearchHistory">{
   &quot;history&quot;: [

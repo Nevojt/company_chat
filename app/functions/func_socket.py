@@ -404,6 +404,7 @@ async def delete_message(message_id: int,
 
     session.add(message)
     await session.commit()
+    return message_id
 
     # return message
 
@@ -509,6 +510,7 @@ async def send_message_deleted_room(room_id: int, manager: object,
                 avatar=user.avatar,
                 verified=user.verified,
                 id_return=None,
+                room_id=room_id,
                 add_to_db=False
             )
 
