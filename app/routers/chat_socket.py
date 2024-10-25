@@ -116,7 +116,7 @@ async def websocket_endpoint(
 
                     message_json = await fetch_one_message(vote_data.message_id, session)
                     for user_id, (connection, _, _, user_room, _) in manager.user_connections.items():
-                        await connection.send_text(message_json)
+                        await connection.send_text(str(message_json))
 
                 except Exception as e:
                     logger.error(f"Error processing vote: {e}", exc_info=True)
@@ -134,7 +134,7 @@ async def websocket_endpoint(
                     update_message = await fetch_one_message(message_data.id, session)
 
                     for user_id, (connection, _, _, user_room, _) in manager.user_connections.items():
-                        await connection.send_text(update_message)
+                        await connection.send_text(str(update_message))
 
                 except Exception as e:
                     logger.error(f"Error processing change: {e}", exc_info=True)
