@@ -5,21 +5,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4ee1ecfe-c64d-4381-bed1-a6f6858ee21c" name="Changes" comment="update type message">
-      <change afterPath="$PROJECT_DIR$/_log_config/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/_log_config/log_config.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.github/workflows/public.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/public.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/chat.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/chat.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/AI/sayory.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/AI/sayory.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/functions/func_socket.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/functions/func_socket.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/models/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/routers/auth.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/routers/auth.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/schemas/schemas.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/schemas/schemas.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/settings/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/settings/config.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/settings/database.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/settings/database.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/settings/oauth2.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/settings/oauth2.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyproject.toml" beforeDir="false" afterPath="$PROJECT_DIR$/pyproject.toml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/uv.lock" beforeDir="false" afterPath="$PROJECT_DIR$/uv.lock" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -81,7 +75,7 @@
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
     &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;advanced.settings&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
 }</component>
@@ -126,7 +120,12 @@
       <workItem from="1731614162188" duration="4277000" />
       <workItem from="1731684548612" duration="74000" />
       <workItem from="1731690249542" duration="3630000" />
-      <workItem from="1731695896808" duration="1658000" />
+      <workItem from="1731695896808" duration="2011000" />
+      <workItem from="1731697960604" duration="47000" />
+      <workItem from="1731698027768" duration="2070000" />
+      <workItem from="1731700131365" duration="296000" />
+      <workItem from="1731700437778" duration="1085000" />
+      <workItem from="1731701553617" duration="471000" />
     </task>
     <task id="LOCAL-00001" summary="Update Message">
       <option name="closed" value="true" />
