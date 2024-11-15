@@ -1,15 +1,17 @@
 
 from openai import AsyncOpenAI
 from app.settings.config import settings
+from _log_config.log_config import get_logger
 
 
+logger = get_logger('sayory', 'sayory.log')
 sayori_key=settings.openai_api_key
 
 client = AsyncOpenAI(
     api_key=sayori_key
 )
 
-instruction = "Ти асистент в мессінджері, твоє ім'я Sayory, відповідь не повинна перевищувати 600 символів."
+instruction = "Ти асистент в мессенджері, твоє ім'я Sayory, відповідь не повинна перевищувати 600 символів."
 
 
 async def ask_to_gpt(ask_to_chat: str) -> str:
@@ -40,4 +42,5 @@ async def ask_to_gpt(ask_to_chat: str) -> str:
         response = chat_completion.choices[0].model_dump()
         return response["message"]["content"]
     except Exception as e:
+        logger.error(f"Error occurred while generating response: {e}")
         return "Sorry, I couldn't process your request."

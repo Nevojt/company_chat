@@ -14,15 +14,14 @@ from app.models import models
 
 import base64
 from cryptography.fernet import Fernet, InvalidToken
+from _log_config.log_config import get_logger
 
 
 # Key for symmetric encryption
 key = settings.key_crypto
 cipher = Fernet(key)
 
-
-logging.basicConfig(filename='_log/func_vote.log', format='%(asctime)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
+logger = get_logger('func_socket', 'func_socket.log')
 
 def is_base64(s):
     try:
@@ -78,49 +77,53 @@ async def fetch_last_messages(rooms: str, limit: int, session: AsyncSession) -> 
     Returns:
     List[schemas.SocketModel]: A list of SocketModel objects representing the last 50 messages in the room.
     """
-    query = select(
-    models.Socket, 
-    models.User, 
-    func.coalesce(func.sum(models.Vote.dir), 0).label('votes')
-    ).outerjoin(
-        models.Vote, models.Socket.id == models.Vote.message_id
-    ).outerjoin( 
-        models.User, models.Socket.receiver_id == models.User.id
-    ).filter(
-        models.Socket.rooms == rooms
-    ).group_by(
-        models.Socket.id, models.User.id
-    ).order_by(
-        desc(models.Socket.created_at)
-    ).limit(limit)
+    try:
+        query = select(
+        models.Socket,
+        models.User,
+        func.coalesce(func.sum(models.Vote.dir), 0).label('votes')
+        ).outerjoin(
+            models.Vote, models.Socket.id == models.Vote.message_id
+        ).outerjoin(
+            models.User, models.Socket.receiver_id == models.User.id
+        ).filter(
+            models.Socket.rooms == rooms
+        ).group_by(
+            models.Socket.id, models.User.id
+        ).order_by(
+            desc(models.Socket.created_at)
+        ).limit(limit)
 
-    result = await session.execute(query)
-    raw_messages = result.all()
+        result = await session.execute(query)
+        raw_messages = result.all()
 
-    # Convert raw messages to SocketModel
-    messages = []
-    for socket, user, votes in raw_messages:
-        decrypted_message = await async_decrypt(socket.message)
-        
-        messages.append(
-            schemas.SocketModel(
-                created_at=socket.created_at,
-                receiver_id=socket.receiver_id,
-                message=decrypted_message,
-                fileUrl=socket.fileUrl,
-                user_name=user.user_name if user is not None else "Unknown user",
-                avatar=user.avatar if user is not None else "https://tygjaceleczftbswxxei.supabase.co/storage/v1/object/public/image_bucket/inne/image/photo_2024-06-14_19-20-40.jpg",
-                verified=user.verified if user is not None else None,
-                id=socket.id,
-                vote=votes,
-                id_return=socket.id_return,
-                edited=socket.edited,
-                deleted=socket.deleted,
-                room_id=socket.room_id
+        # Convert raw messages to SocketModel
+        messages = []
+        for socket, user, votes in raw_messages:
+            decrypted_message = await async_decrypt(socket.message)
+
+            messages.append(
+                schemas.SocketModel(
+                    created_at=socket.created_at,
+                    receiver_id=socket.receiver_id,
+                    message=decrypted_message,
+                    fileUrl=socket.fileUrl,
+                    user_name=user.user_name if user is not None else "Unknown user",
+                    avatar=user.avatar if user is not None else "https://tygjaceleczftbswxxei.supabase.co/storage/v1/object/public/image_bucket/inne/image/photo_2024-06-14_19-20-40.jpg",
+                    verified=user.verified if user is not None else None,
+                    id=socket.id,
+                    vote=votes,
+                    id_return=socket.id_return,
+                    edited=socket.edited,
+                    deleted=socket.deleted,
+                    room_id=socket.room_id
+                )
             )
-        )
-    messages.reverse()
-    return messages
+        messages.reverse()
+        return messages
+    except Exception as e:
+        logger.error(f"Failed to fetch last messages: {str(e)}")
+        return []
 
 async def send_messages_via_websocket(messages, websocket):
     for message in messages:

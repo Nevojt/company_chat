@@ -45,7 +45,9 @@ class SocketUpdate(BaseModel):
 class SocketDelete(BaseModel):
     id: int
         
-        
+class Token(BaseModel):
+    access_token: str
+    token_type: str
     
 class TokenData(BaseModel):
     id: Optional[int] = None

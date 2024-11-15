@@ -1,4 +1,4 @@
-import logging
+from _log_config.log_config import get_logger
 from typing import Annotated
 from fastapi import APIRouter, Depends, status, HTTPException
 from fastapi.security.oauth2 import OAuth2PasswordRequestForm
@@ -6,16 +6,12 @@ from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
-from ..settings import oauth2, database
+from ..settings import oauth2, utils, database
+from app.models.models import User
 
 from ..schemas import schemas
 
-from ..models import models
-
-from ..settings import utils
-
-# logging.basicConfig(filename='_log/authentication.log', format='%(asctime)s - %(levelname)s - %(message)s')
-# logger = logging.getLogger(__name__)
+logger = get_logger('authentication', 'authentication.log')
 
 router = APIRouter(tags=['Authentication'])
 
@@ -23,6 +19,7 @@ router = APIRouter(tags=['Authentication'])
 @router.post('/login', response_model=schemas.Token)
 async def login(user_credentials: Annotated[OAuth2PasswordRequestForm, Depends()],
                 db: AsyncSession = Depends(database.get_async_session)):
+    #
     """
     OAuth2-compatible token login, get an access token for future requests.
 
@@ -44,26 +41,27 @@ async def login(user_credentials: Annotated[OAuth2PasswordRequestForm, Depends()
     - Returns the access token and the token type as a JSON object.
     """
     try:
-        query = select(models.User).where(models.User.email == user_credentials.username)
-        result = await db.execute(query)
-        user = result.scalar_one_or_none()
-
-        print(user.active)
+        query_user = await db.execute(select(User).where(User.email == user_credentials.username))
+        user = query_user.scalar_one_or_none()
 
         if not user:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid Credentials")
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                                detail="Invalid Credentials")
 
         if user.blocked:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                                 detail=f"User with ID {user.id} is blocked")
+
         if not user.active:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                                 detail=f"User with ID {user.id} is not active")
 
         if not utils.verify(user_credentials.password, user.password):
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid Credentials")
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                                detail="Invalid Credentials")
 
         access_token = await oauth2.create_access_token(data={"user_id": user.id}, db=db)
+        await db.commit()
 
         # Return the token
         return {
@@ -71,13 +69,13 @@ async def login(user_credentials: Annotated[OAuth2PasswordRequestForm, Depends()
             "token_type": "bearer"}
 
     except HTTPException as ex_error:
-        # logger.error(f"Error processing Authentication {ex_error}", exc_info=True)
+        logger.error(f"Error processing Authentication {ex_error}", exc_info=True)
         # Re-raise HTTPExceptions without modification
         raise
     except Exception as e:
         # Log the exception or handle it as you see fit
-        # logger.error(f"An error occurred: Authentication {e}", exc_info=True)
-        print(f"An error occurred: {e}")
+        logger.error(f"An error occurred: Authentication {e}", exc_info=True)
+        # print(f"An error occurred: {e}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                             detail="An error occurred while processing the request.")
 

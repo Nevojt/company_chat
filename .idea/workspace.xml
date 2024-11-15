@@ -4,14 +4,34 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4ee1ecfe-c64d-4381-bed1-a6f6858ee21c" name="Changes" comment="return delete func">
+    <list default="true" id="4ee1ecfe-c64d-4381-bed1-a6f6858ee21c" name="Changes" comment="update type message">
+      <change afterPath="$PROJECT_DIR$/_log_config/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/_log_config/log_config.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/chat.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/chat.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/AI/sayory.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/AI/sayory.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/functions/func_socket.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/functions/func_socket.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/models/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/routers/auth.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/routers/auth.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/schemas/schemas.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/schemas/schemas.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/settings/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/settings/config.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/settings/database.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/settings/database.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/settings/oauth2.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/settings/oauth2.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
@@ -34,6 +54,12 @@
     &quot;accountId&quot;: &quot;0fd1484d-2255-4912-b235-355540448ca4&quot;
   }
 }</component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/app/functions/func_socket.py" root0="FORCE_HIGHLIGHTING" />
+  </component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+  </component>
   <component name="ProjectColorInfo">{
   &quot;customColor&quot;: &quot;&quot;,
   &quot;associatedIndex&quot;: 6
@@ -43,26 +69,27 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Python.chat_socket.executor": "Debug",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "master",
-    "last_opened_file_path": "/home/dmytro/company/api",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "advanced.settings",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Python.chat_socket.executor&quot;: &quot;Debug&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/dmytro/company/api&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;advanced.settings&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-js-predefined-d6986cc7102b-5c90d61e3bab-JavaScript-PY-242.23339.19" />
-        <option value="bundled-python-sdk-0029f7779945-399fe30bd8c1-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-242.23339.19" />
+        <option value="bundled-js-predefined-d6986cc7102b-e768b9ed790e-JavaScript-PY-243.21565.199" />
+        <option value="bundled-python-sdk-cab1f2013843-4ae2d6a61b08-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-243.21565.199" />
       </set>
     </attachedChunks>
   </component>
@@ -94,7 +121,12 @@
       <workItem from="1728586915242" duration="1155000" />
       <workItem from="1728664949822" duration="8000" />
       <workItem from="1728831207796" duration="592000" />
-      <workItem from="1728831906149" duration="2537000" />
+      <workItem from="1728831906149" duration="2803000" />
+      <workItem from="1729858640471" duration="436000" />
+      <workItem from="1731614162188" duration="4277000" />
+      <workItem from="1731684548612" duration="74000" />
+      <workItem from="1731690249542" duration="3630000" />
+      <workItem from="1731695896808" duration="1658000" />
     </task>
     <task id="LOCAL-00001" summary="Update Message">
       <option name="closed" value="true" />
@@ -144,7 +176,23 @@
       <option name="project" value="LOCAL" />
       <updated>1728831419123</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="delete message">
+      <option name="closed" value="true" />
+      <created>1728840351756</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1728840351756</updated>
+    </task>
+    <task id="LOCAL-00008" summary="update type message">
+      <option name="closed" value="true" />
+      <created>1729858992582</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1729858992582</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -183,7 +231,9 @@
     <MESSAGE value="BugFix Vote" />
     <MESSAGE value="add room id to socket functions" />
     <MESSAGE value="return delete func" />
-    <option name="LAST_COMMIT_MESSAGE" value="return delete func" />
+    <MESSAGE value="delete message" />
+    <MESSAGE value="update type message" />
+    <option name="LAST_COMMIT_MESSAGE" value="update type message" />
   </component>
   <component name="WfRunsListSearchHistory">{
   &quot;history&quot;: [

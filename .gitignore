@@ -26,7 +26,7 @@ share/python-wheels/
 *.egg
 MANIFEST
 start_app
-.idea
+.idea/
 chat_venv
 
 # PyInstaller
@@ -42,7 +42,7 @@ pip-delete-this-directory.txt
 
 
 # castom
-chat_venv
+chat_venv/
 .idea
 .env
 # Unit test / coverage reports

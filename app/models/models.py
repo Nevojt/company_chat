@@ -1,7 +1,8 @@
-from sqlalchemy import Boolean, Column, DateTime, Integer, Interval, String, ForeignKey, Enum
+from sqlalchemy import Boolean, Column, DateTime, Integer, Interval, String, ForeignKey, Enum, UniqueConstraint, JSON
 from sqlalchemy.sql.expression import text
 from sqlalchemy.sql.sqltypes import TIMESTAMP
 from sqlalchemy.orm import relationship
+from sqlalchemy.dialects.postgresql import UUID
 from datetime import timedelta
 from enum import Enum as PythonEnum
 from ..settings.database import Base
@@ -12,28 +13,37 @@ class UserRole(str, PythonEnum):
     admin =  "admin"
     user = "user"
 
-class Socket(Base):
-    __tablename__ = 'socket'
-    
-    id = Column(Integer, primary_key=True, nullable=False, index=True, autoincrement=True)
+
+class ChatMessages(Base):
+    __tablename__ = 'chat_messages'
+
+    id = Column(UUID(as_uuid=True), primary_key=True, server_default=text('uuid_generate_v4()'), nullable=False)
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
     message = Column(String)
-    receiver_id = Column(Integer, ForeignKey('users.id', ondelete='SET NULL'))
-    rooms = Column(String, ForeignKey('rooms.name_room', ondelete='CASCADE', onupdate='CASCADE'), nullable=False)
-    id_return = Column(Integer)
     fileUrl = Column(String)
+    voiceUrl = Column(String)
+    videoUrl = Column(String)
+    receiver_id = Column(UUID, ForeignKey('users.id', ondelete='SET NULL'))
+    rooms = Column(String, ForeignKey('rooms.name_room', ondelete='CASCADE', onupdate='CASCADE'), nullable=False)
+    room_id = Column(UUID, ForeignKey('rooms.id', ondelete='CASCADE'))
+    id_return = Column(Integer)
+
     edited = Column(Boolean, server_default='false')
+    return_message = Column(JSON, server_default=None)
     deleted = Column(Boolean, server_default='false')
-    room_id = Column(Integer, ForeignKey('rooms.id', ondelete='CASCADE'))
-  
+
+    # Relationships
+    reports = relationship("Report", back_populates="message")
+    notifications = relationship("Notification", back_populates="message")
 
 
 class User(Base):
     __tablename__ = 'users'
-    
-    id = Column(Integer, primary_key=True, nullable=False, index=True, autoincrement=True)
+
+    id = Column(UUID(as_uuid=True), primary_key=True, server_default=text('uuid_generate_v4()'), nullable=False)
     email = Column(String, nullable=False, unique=True)
-    user_name = Column(String, nullable=False)
+    user_name = Column(String, nullable=False, unique=True)
+    full_name = Column(String, nullable=True)
     password = Column(String, nullable=False)
     avatar = Column(String, nullable=False)
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
@@ -42,62 +52,79 @@ class User(Base):
     refresh_token = Column(String, nullable=True)
     role = Column(Enum(UserRole), default=UserRole.user)
     blocked = Column(Boolean, nullable=False, server_default='false')
-    password_changed = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
-    
-    bans = relationship("Ban", back_populates="user")
-    online_times = relationship("UserOnlineTime", back_populates="user")
-    
-class User_Status(Base):
-    __tablename__ = 'user_status' 
-    
+    password_changed = Column(TIMESTAMP(timezone=True), nullable=True)
+    company_id = Column(UUID, ForeignKey('companies.id', ondelete="CASCADE"), nullable=True)
+    active = Column(Boolean, nullable=False, server_default='True')
+    description = Column(String)
+
+    company = relationship("Company", back_populates="users")
+    bans = relationship("Ban", back_populates="users")
+    # Relationships
+    reports = relationship("Report", back_populates="reported_by_user")
+    notifications = relationship("Notification", back_populates="moderator")
+
+    __table_args__ = (
+        UniqueConstraint('email', name='uq_user_email'),
+        UniqueConstraint('user_name', name='uq_user_name'),
+    )
+
+
+class UserStatus(Base):
+    __tablename__ = 'user_status'
+
     id = Column(Integer, primary_key=True, nullable=False, index=True, autoincrement=True)
-    room_id = Column(Integer, ForeignKey("rooms.id", ondelete="CASCADE"), nullable=False)
-    name_room = Column(String, ForeignKey("rooms.name_room", ondelete="CASCADE", onupdate="CASCADE"), nullable=False)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"),unique=True, nullable=False)
+    room_id = Column(UUID, ForeignKey("rooms.id", ondelete="CASCADE"), nullable=False)
+    name_room = Column(String, ForeignKey("rooms.name_room", ondelete="CASCADE", onupdate='CASCADE'), nullable=False)
+    user_id = Column(UUID, ForeignKey("users.id", ondelete="CASCADE"), unique=True, nullable=False)
     user_name = Column(String, nullable=False)
     status = Column(Boolean, server_default='True', nullable=False)
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
 
-    
-    
+
 class Rooms(Base):
     __tablename__ = 'rooms'
-    
-    id = Column(Integer, primary_key=True, nullable=False)
+
+    id = Column(UUID(as_uuid=True), primary_key=True, server_default=text('uuid_generate_v4()'), nullable=False)
     name_room = Column(String, nullable=False, unique=True)
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
     image_room = Column(String, nullable=False)
-    owner = Column(Integer, ForeignKey('users.id', ondelete='SET NULL'))
-    secret_room = Column(Boolean, server_default='false')
-    block = Column(Boolean, default=False)
+    owner = Column(UUID, (ForeignKey("users.id", ondelete='SET NULL')), nullable=True)
+    secret_room = Column(Boolean, default=False)
+    block = Column(Boolean, nullable=False, server_default='false')
     delete_at = Column(TIMESTAMP(timezone=True), nullable=True)
-    
+    company_id = Column(UUID, ForeignKey('companies.id', ondelete="CASCADE"), nullable=True)
+    description = Column(String(255), nullable=True)
+
+    # Relationships
+    company = relationship("Company", back_populates="rooms")
+    invitations = relationship("RoomInvitation", back_populates="rooms")
+    notifications = relationship("Notification", back_populates="rooms")
+
+
 class Ban(Base):
     __tablename__ = 'bans'
-    
+
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey('users.id', ondelete="CASCADE"),  nullable=False)
-    room_id = Column(Integer, ForeignKey("rooms.id", ondelete="CASCADE"), nullable=False)
+    user_id = Column(UUID, ForeignKey('users.id', ondelete="CASCADE"), nullable=False)
+    room_id = Column(UUID, ForeignKey("rooms.id", ondelete="CASCADE"), nullable=False)
     start_time = Column(DateTime)
     end_time = Column(DateTime)
-    
-    user = relationship("User", back_populates="bans") 
+
+    users = relationship("User", back_populates="bans")
 
 
-class Vote(Base):
-    __tablename__ = 'votes'
-    
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
-    message_id = Column(Integer, ForeignKey("socket.id", ondelete="CASCADE"), primary_key=True)
+class ChatMessageVote(Base):
+    __tablename__ = 'chat_message_votes'
+
+    user_id = Column(UUID, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+    message_id = Column(UUID, ForeignKey("chat_messages.id", ondelete="CASCADE"), primary_key=True)
     dir = Column(Integer)
     
 class UserOnlineTime(Base):
     __tablename__ = 'user_online_time'
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    user_id = Column(UUID, ForeignKey('users.id', ondelete="CASCADE"), nullable=False)
     session_start = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
     session_end = Column(TIMESTAMP(timezone=True), nullable=True)
     total_online_time = Column(Interval, nullable=True, default=timedelta())
-    
-    user = relationship("User", back_populates="online_times")
