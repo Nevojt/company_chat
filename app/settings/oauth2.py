@@ -1,21 +1,22 @@
 from _log_config.log_config import get_logger
+
 from jose import JWTError, jwt
 from datetime import datetime, timedelta, timezone
+
+from sqlalchemy import select
 from uuid import UUID
-from sqlalchemy.future import select
 
-from ..schemas.schemas import TokenData
-
-from ..models.models import User
-from ..settings.database import get_async_session
+from app.settings import database
+from app.models.models import User
+from app.schemas.schemas import TokenData
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
-from .config import settings
+from app.settings.config import settings
+
+oauth2_logger = get_logger('oauth2', 'oauth2log.log')
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
-
-oauth2_logger = get_logger('oauth2_logger', 'oauth2_logger.log')
 
 SECRET_KEY = settings.secret_key
 ALGORITHM = settings.algorithm
@@ -42,6 +43,7 @@ async def create_access_token(user_id: UUID, db: AsyncSession):
         oauth2_logger.error(f"Error creating access token: {e}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                             detail="Error creating access token")
+
 
 
 async def verify_access_token(token: str, credentials_exception, db: AsyncSession):
@@ -73,8 +75,10 @@ async def verify_access_token(token: str, credentials_exception, db: AsyncSessio
         raise credentials_exception
 
 
+
+
 async def get_current_user(token: str = Depends(oauth2_scheme),
-                           db: AsyncSession = Depends(get_async_session)):
+                           db: AsyncSession = Depends(database.get_async_session)):
     """
     Get the currently authenticated user.
 
@@ -107,3 +111,25 @@ async def get_current_user(token: str = Depends(oauth2_scheme),
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                             detail="Error getting current user")
 
+
+# async def create_refresh_token(user_id: UUID, db: AsyncSession):
+#     try:# Отримання користувача з бази даних
+#         user = await db.execute(select(User).filter(User.id == user_id))
+#         user = user.scalar()
+#
+#         if not user:
+#             raise Exception("User not found")  # Помилка, якщо користувач не знайдений
+#
+#         expire = datetime.now(timezone.utc) + timedelta(days=10)
+#         to_encode = {
+#             "exp": int(expire.timestamp()),
+#             "user_id": str(user_id),
+#             "last_password_change":str(user.password_changed)
+#         }
+#
+#         encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+#         return encoded_jwt
+#     except Exception as e:
+#         oauth2_logger.error(f"Error creating refresh token: {e}")
+#         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+#                             detail="Error creating refresh token")

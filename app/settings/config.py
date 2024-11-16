@@ -16,10 +16,13 @@ class Settings(BaseSettings):
     secret_key: str
     algorithm: str
     access_token_expire_minutes: int
+    password_pepper: str
     key_crypto: str
     openai_api_key: str
-
     sentry_url: str
+
+    sayory: str
+    hell: str
 
     model_config = SettingsConfigDict(env_file = ".env")
 

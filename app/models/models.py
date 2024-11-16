@@ -32,9 +32,9 @@ class ChatMessages(Base):
     return_message = Column(JSON, server_default=None)
     deleted = Column(Boolean, server_default='false')
 
-    # Relationships
-    reports = relationship("Report", back_populates="message")
-    notifications = relationship("Notification", back_populates="message")
+    # # Relationships
+    # reports = relationship("Report", back_populates="message")
+    # notifications = relationship("Notification", back_populates="message")
 
 
 class User(Base):
@@ -57,11 +57,11 @@ class User(Base):
     active = Column(Boolean, nullable=False, server_default='True')
     description = Column(String)
 
-    company = relationship("Company", back_populates="users")
+    # company = relationship("Company", back_populates="users")
     bans = relationship("Ban", back_populates="users")
     # Relationships
-    reports = relationship("Report", back_populates="reported_by_user")
-    notifications = relationship("Notification", back_populates="moderator")
+    # reports = relationship("Report", back_populates="reported_by_user")
+    # notifications = relationship("Notification", back_populates="moderator")
 
     __table_args__ = (
         UniqueConstraint('email', name='uq_user_email'),
@@ -96,9 +96,9 @@ class Rooms(Base):
     description = Column(String(255), nullable=True)
 
     # Relationships
-    company = relationship("Company", back_populates="rooms")
-    invitations = relationship("RoomInvitation", back_populates="rooms")
-    notifications = relationship("Notification", back_populates="rooms")
+    # company = relationship("Company", back_populates="rooms")
+    # invitations = relationship("RoomInvitation", back_populates="rooms")
+    # notifications = relationship("Notification", back_populates="rooms")
 
 
 class Ban(Base):

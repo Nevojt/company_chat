@@ -11,12 +11,13 @@ from app.models.models import User
 
 from ..schemas import schemas
 
-logger = get_logger('authentication', 'authentication.log')
+auth_logger = get_logger('authentication', 'authentication.log')
 
 router = APIRouter(tags=['Authentication'])
 
 
 @router.post('/login', response_model=schemas.Token)
+# @router.post('/login', response_model=Token)
 async def login(user_credentials: Annotated[OAuth2PasswordRequestForm, Depends()],
                 db: AsyncSession = Depends(database.get_async_session)):
     #
@@ -41,8 +42,9 @@ async def login(user_credentials: Annotated[OAuth2PasswordRequestForm, Depends()
     - Returns the access token and the token type as a JSON object.
     """
     try:
-        query_user = await db.execute(select(User).where(User.email == user_credentials.username))
-        user = query_user.scalar_one_or_none()
+        query = select(User).where(User.email == user_credentials.username)
+        result = await db.execute(query)
+        user = result.scalar_one_or_none()
 
         if not user:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
@@ -60,7 +62,9 @@ async def login(user_credentials: Annotated[OAuth2PasswordRequestForm, Depends()
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                                 detail="Invalid Credentials")
 
-        access_token = await oauth2.create_access_token(data={"user_id": user.id}, db=db)
+        access_token = await oauth2.create_access_token(user_id=user.id,
+                                                        db=db)
+
         await db.commit()
 
         # Return the token
@@ -69,12 +73,12 @@ async def login(user_credentials: Annotated[OAuth2PasswordRequestForm, Depends()
             "token_type": "bearer"}
 
     except HTTPException as ex_error:
-        logger.error(f"Error processing Authentication {ex_error}", exc_info=True)
+        auth_logger.error(f"Error processing Authentication {ex_error}", exc_info=True)
         # Re-raise HTTPExceptions without modification
         raise
     except Exception as e:
         # Log the exception or handle it as you see fit
-        logger.error(f"An error occurred: Authentication {e}", exc_info=True)
+        auth_logger.error(f"An error occurred: Authentication {e}", exc_info=True)
         # print(f"An error occurred: {e}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                             detail="An error occurred while processing the request.")

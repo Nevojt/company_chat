@@ -38,7 +38,7 @@ async def wrap_message(chat_model_instance: ChatMessagesSchema) -> WrappedSocket
 class WrappedUpdateMessage(BaseModel):
     update: ChatMessagesSchema
         
-def wrap_message_update(socket_model_update: ChatMessagesSchema) -> WrappedUpdateMessage:
+async def wrap_message_update(socket_model_update: ChatMessagesSchema) -> WrappedUpdateMessage:
     return WrappedUpdateMessage(update=socket_model_update)
 
 

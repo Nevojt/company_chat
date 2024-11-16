@@ -1,4 +1,4 @@
-
+from uuid import UUID
 from datetime import datetime, timedelta
 import pytz
 import logging
@@ -66,7 +66,8 @@ async def async_decrypt(encoded_data: str):
         return None
 
 
-async def fetch_last_messages(rooms: str, limit: int, session: AsyncSession) -> List[schemas.SocketModel]:
+async def fetch_last_messages(room_id: UUID, limit: int,
+                              session: AsyncSession) -> List[schemas.ChatMessagesSchema]:
     """
     This function fetches the last 50 messages in a given room and returns them as a list of SocketModel objects.
 
@@ -79,19 +80,19 @@ async def fetch_last_messages(rooms: str, limit: int, session: AsyncSession) -> 
     """
     try:
         query = select(
-        models.Socket,
+        models.ChatMessages,
         models.User,
-        func.coalesce(func.sum(models.Vote.dir), 0).label('votes')
+        func.coalesce(func.sum(models.ChatMessageVote.dir), 0).label('votes')
         ).outerjoin(
-            models.Vote, models.Socket.id == models.Vote.message_id
+            models.ChatMessageVote, models.ChatMessages.id == models.ChatMessageVote.message_id
         ).outerjoin(
-            models.User, models.Socket.receiver_id == models.User.id
+            models.User, models.ChatMessages.receiver_id == models.User.id
         ).filter(
-            models.Socket.rooms == rooms
+            models.ChatMessages.room_id == room_id
         ).group_by(
-            models.Socket.id, models.User.id
+            models.ChatMessages.id, models.User.id
         ).order_by(
-            desc(models.Socket.created_at)
+            desc(models.ChatMessages.created_at)
         ).limit(limit)
 
         result = await session.execute(query)
@@ -99,24 +100,26 @@ async def fetch_last_messages(rooms: str, limit: int, session: AsyncSession) -> 
 
         # Convert raw messages to SocketModel
         messages = []
-        for socket, user, votes in raw_messages:
-            decrypted_message = await async_decrypt(socket.message)
+        for message, user, votes in raw_messages:
+            decrypted_message = await async_decrypt(message.message)
 
             messages.append(
-                schemas.SocketModel(
-                    created_at=socket.created_at,
-                    receiver_id=socket.receiver_id,
+                schemas.ChatMessagesSchema(
+                    created_at=message.created_at,
+                    receiver_id=message.receiver_id,
                     message=decrypted_message,
-                    fileUrl=socket.fileUrl,
+                    fileUrl=message.fileUrl,
+                    voiceUrl=message.voiceUrl,
+                    videoUrl=message.videoUrl,
                     user_name=user.user_name if user is not None else "Unknown user",
                     avatar=user.avatar if user is not None else "https://tygjaceleczftbswxxei.supabase.co/storage/v1/object/public/image_bucket/inne/image/photo_2024-06-14_19-20-40.jpg",
                     verified=user.verified if user is not None else None,
-                    id=socket.id,
+                    id=message.id,
                     vote=votes,
-                    id_return=socket.id_return,
-                    edited=socket.edited,
-                    deleted=socket.deleted,
-                    room_id=socket.room_id
+                    id_return=message.id_return,
+                    edited=message.edited,
+                    deleted=message.deleted,
+                    room_id=message.room_id
                 )
             )
         messages.reverse()
@@ -127,27 +130,27 @@ async def fetch_last_messages(rooms: str, limit: int, session: AsyncSession) -> 
 
 async def send_messages_via_websocket(messages, websocket):
     for message in messages:
-        wrapped_message = schemas.wrap_message(message)
+        wrapped_message = await schemas.wrap_message(message)
         json_message = wrapped_message.model_dump_json()
         await websocket.send_text(json_message)
     
     
-async def fetch_one_message(id: int, session: AsyncSession) -> schemas.SocketModel:
+async def fetch_one_message(message_id: UUID, session: AsyncSession) -> schemas.ChatMessagesSchema:
     """
     Fetch a single message by its ID and return as a SocketModel object.
     """
     query = select(
-        models.Socket, 
+        models.ChatMessages,
         models.User, 
-        func.coalesce(func.sum(models.Vote.dir), 0).label('votes')
+        func.coalesce(func.sum(models.ChatMessageVote.dir), 0).label('votes')
     ).outerjoin(
-        models.Vote, models.Socket.id == models.Vote.message_id
+        models.ChatMessageVote, models.ChatMessages.id == models.ChatMessageVote.message_id
     ).outerjoin( 
-        models.User, models.Socket.receiver_id == models.User.id
+        models.User, models.ChatMessages.receiver_id == models.User.id
     ).filter(
-        models.Socket.id == id
+        models.ChatMessages.id == message_id
     ).group_by(
-        models.Socket.id, models.User.id
+        models.ChatMessages.id, models.User.id
     )
     
     result = await session.execute(query)
@@ -155,32 +158,36 @@ async def fetch_one_message(id: int, session: AsyncSession) -> schemas.SocketMod
 
     # Convert raw messages to SocketModel
     if raw_message:
-        socket, user, votes = raw_message
-        decrypted_message = await async_decrypt(socket.message)
+        message, user, votes = raw_message
+        decrypted_message = await async_decrypt(message.message)
         
-        message = schemas.SocketModel(
-                created_at=socket.created_at,
-                receiver_id=socket.receiver_id,
+        message = schemas.ChatMessagesSchema(
+                created_at=message.created_at,
+                receiver_id=message.receiver_id,
                 message=decrypted_message,
-                fileUrl=socket.fileUrl,
+                fileUrl=message.fileUrl,
+                voiceUrl=message.voiceUrl,
+                videoUrl=message.videoUrl,
                 user_name=user.user_name if user is not None else "Unknown user",
                 avatar=user.avatar if user is not None else "https://tygjaceleczftbswxxei.supabase.co/storage/v1/object/public/image_bucket/inne/image/photo_2024-06-14_19-20-40.jpg",
                 verified=user.verified if user is not None else None,
-                id=socket.id,
+                id=message.id,
                 vote=votes,
-                id_return=socket.id_return,
-                edited=socket.edited,
-                deleted=socket.deleted,
-                room_id=socket.room_id
+                id_return=message.id_return,
+                edited=message.edited,
+                deleted=message.deleted,
+                room_id=message.room_id
             )
-        wrapped_message_update = schemas.wrap_message_update(message)
+        wrapped_message_update = await schemas.wrap_message_update(message)
         return wrapped_message_update.model_dump_json()
         
     else:
-        raise HTTPException(status_code=404, detail="Message not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="Message not found")
     
 
-async def update_room_for_user(user_id: int, room: str, session: AsyncSession):
+async def update_room_for_user(user_id: UUID, room_id: UUID,
+                               session: AsyncSession):
     """
     Update the room for a user in the database.
 
@@ -207,15 +214,15 @@ async def update_room_for_user(user_id: int, room: str, session: AsyncSession):
                 detail=f"User status with user_id: {user_id} not found"
             )
         
-        room_record = await get_room_by_name(room, session)
+        room_record = await get_room_by_id(room_id, session)
         
         if room_record is None:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Room with name: {room} not found"
+                detail=f"Room with name: {room_id} not found"
             )
 
-        user_status.name_room = room
+        user_status.name_room = room_record.name_room
         user_status.room_id = room_record.id
         await session.commit()
 
@@ -230,7 +237,7 @@ async def update_room_for_user(user_id: int, room: str, session: AsyncSession):
         )
     
     
-async def update_room_for_user_live(user_id: int, session: AsyncSession):
+async def update_room_for_user_live(user_id: UUID, session: AsyncSession):
     """
     Update the room name for a specific user.
 
@@ -283,8 +290,8 @@ async def process_vote(vote: schemas.Vote, session: AsyncSession, current_user: 
         if vote.message_id == 0:
             return
 
-        result = await session.execute(select(models.Socket).filter(models.Socket.id == vote.message_id))
-        message = result.scalars().first()
+        result = await session.execute(select(models.ChatMessages).filter(models.ChatMessages.id == vote.message_id))
+        message = result.scalar_one_or_none()
         
         if not message:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
@@ -294,11 +301,11 @@ async def process_vote(vote: schemas.Vote, session: AsyncSession, current_user: 
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                                 detail="Cannot vote on a deleted message")
         
-        vote_result = await session.execute(select(models.Vote).filter(
-            models.Vote.message_id == vote.message_id, 
-            models.Vote.user_id == current_user.id
+        vote_result = await session.execute(select(models.ChatMessageVote).filter(
+            models.ChatMessageVote.message_id == vote.message_id,
+            models.ChatMessageVote.user_id == current_user.id
         ))
-        found_vote = vote_result.scalars().first()
+        found_vote = vote_result.scalar_one_or_none()
         
         if vote.dir == 1:
             if found_vote:
@@ -306,7 +313,7 @@ async def process_vote(vote: schemas.Vote, session: AsyncSession, current_user: 
                 await session.commit()
                 return vote.message_id
             else:
-                new_vote = models.Vote(message_id=vote.message_id, user_id=current_user.id, dir=vote.dir)
+                new_vote = models.ChatMessageVote(message_id=vote.message_id, user_id=current_user.id, dir=vote.dir)
                 session.add(new_vote)
                 await session.commit()
                 return vote.message_id
@@ -331,7 +338,7 @@ async def process_vote(vote: schemas.Vote, session: AsyncSession, current_user: 
         
         
         
-async def change_message(message_id: int, message_update: schemas.SocketUpdate,
+async def change_message(message_id: UUID, message_update: schemas.ChatUpdateMessage,
                          session: AsyncSession, 
                          current_user: models.User):
     """
@@ -366,7 +373,7 @@ async def change_message(message_id: int, message_update: schemas.SocketUpdate,
 
 
 
-async def delete_message(message_id: int,
+async def delete_message(message_id: UUID,
                          session: AsyncSession, 
                          current_user: models.User):
     
@@ -394,12 +401,14 @@ async def delete_message(message_id: int,
 
     message.message = None
     message.fileUrl = None
+    message.voiceUrl = None
+    message.videoUrl = None
     message.id_return = None
     message.deleted = True
 
-    vote_result = await session.execute(select(models.Vote).filter(
-        models.Vote.message_id == message_id,
-        models.Vote.user_id == current_user.id
+    vote_result = await session.execute(select(models.ChatMessageVote).filter(
+        models.ChatMessageVote.message_id == message_id,
+        models.ChatMessageVote.user_id == current_user.id
     ))
     found_vote = vote_result.scalars().all()
     for vote in found_vote:
@@ -407,16 +416,16 @@ async def delete_message(message_id: int,
 
     session.add(message)
     await session.commit()
-    return message_id
+    return str(message_id)
 
     # return message
 
 
-async def online(session: AsyncSession, user_id: int):
+async def online(user_id: UUID, session: AsyncSession, ):
     return await get_user_status(user_id, session)
 
 
-async def update_user_status(session: AsyncSession, user_id: int, is_online: bool):
+async def update_user_status(user_id: UUID, is_online: bool, session: AsyncSession):
     """
     Update a user's online status in the database.
 
@@ -435,8 +444,8 @@ async def update_user_status(session: AsyncSession, user_id: int, is_online: boo
     """
     try:
         await session.execute(
-            update(models.User_Status)
-            .where(models.User_Status.user_id == user_id)
+            update(models.UserStatus)
+            .where(models.UserStatus.user_id == user_id)
             .values(status=is_online)
         )
         await session.commit()
@@ -446,7 +455,7 @@ async def update_user_status(session: AsyncSession, user_id: int, is_online: boo
         
         
         
-async def fetch_room_data(room: str, session: AsyncSession):
+async def fetch_room_data(room_id: UUID, session: AsyncSession):
     """
     Fetch room data from the database.
 
@@ -463,14 +472,14 @@ async def fetch_room_data(room: str, session: AsyncSession):
     If the room does not exist, it returns None.
     """
 
-    room_record = await get_room_by_name(room, session)
+    room_record = await get_room_by_id(room_id, session)
     
     if room_record is None:
         return None
     
     return room_record
 
-async def send_message_deleted_room(room_id: int, manager: object,
+async def send_message_deleted_room(room_id: UUID, manager: object,
                                     session: AsyncSession):
     """
     This function sends a message to all users in a specific room, indicating that the room will be deleted in a certain number of days.
@@ -491,13 +500,11 @@ async def send_message_deleted_room(room_id: int, manager: object,
     The message is sent to all users in the specified room using the manager's broadcast_all method.
     """
     
-    user = await get_user_by_id(user_id=2, session=session) 
+    sayory = await get_sayory(session)
     
-    if not user:
+    if not sayory:
         return
-    room_query = select(models.Rooms).where(models.Rooms.id == room_id)
-    room_result = await session.execute(room_query)
-    room = room_result.scalar_one()
+    room = await get_room_by_id(room_id=room_id, session=session)
     
     if room.delete_at:
         days_to_deletion = room.delete_at + timedelta(days=30) - datetime.now(pytz.utc)
@@ -505,20 +512,22 @@ async def send_message_deleted_room(room_id: int, manager: object,
             current_time = datetime.now(pytz.utc).strftime("%Y-%m-%d %H:%M:%S")
             await manager.broadcast_all(
                 message=f"😑 This room will be DELETED in {days_to_deletion.days} days. 😑",
-                file=None,
+                fileUrl=None,
+                voiceUrl=None,
+                vdeoUrl=None,
                 rooms=room.name_room,
                 created_at=current_time,
-                receiver_id=user.id,
-                user_name=user.user_name,
-                avatar=user.avatar,
-                verified=user.verified,
+                receiver_id=sayory.id,
+                user_name=sayory.user_name,
+                avatar=sayory.avatar,
+                verified=sayory.verified,
                 id_return=None,
                 room_id=room_id,
                 add_to_db=False
             )
 
 
-async def send_message_blocking(room: str, manager: object,
+async def send_message_blocking(room_id: UUID, manager: object,
                                 session: AsyncSession):
     """
     This function sends a message to all users in a specific room, indicating that the chat is temporarily blocked.
@@ -536,26 +545,30 @@ async def send_message_blocking(room: str, manager: object,
     Then, it constructs a message indicating that the chat is temporarily blocked.
     The message is sent to all users in the specified room using the manager's broadcast_all method.
     """
-    user = await get_user_by_id(user_id=2, session=session)
+    sayory = await get_sayory(session)
+    room_info = await get_room_by_id(room_id=room_id, session=session)
     
-    if not user:
+    if not sayory:
         return
     
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     await manager.broadcast_all(
                             message="This chat is temporarily blocked.",
-                            file=None,
-                            rooms=room,
+                            fileUrl=None,
+                            voiceUrl=None,
+                            vdeoUrl=None,
+                            room=room_info.name_room,
                             created_at=current_time,
-                            receiver_id=user.id,
-                            user_name=user.user_name,
-                            avatar=user.avatar,
-                            verified=user.verified,
+                            receiver_id=sayory.id,
+                            user_name=sayory.user_name,
+                            avatar=sayory.avatar,
+                            verified=sayory.verified,
                             id_return=None,
+                            room_id=room_id,
                             add_to_db=False
                         )
     
-async def send_message_mute_user(room: str, current_user: models.User,
+async def send_message_mute_user(room_id: UUID, current_user: models.User,
                                  manager: object, session: AsyncSession):
     """
     This function sends a message to a user when they are muted in a specific room.
@@ -571,10 +584,12 @@ async def send_message_mute_user(room: str, current_user: models.User,
     """
 
     # Query to retrieve the user object with id 2
-    user = await get_user_by_id(user_id=2, session=session)
+    sayory = await get_sayory(session)
 
     # Query to retrieve the room object with the given name
-    room_record = await get_room_by_name(room, session)
+    room_info = await get_room_by_id(room_id=room_id, session=session)
+    if not room_info:
+        return
 
     # Get the current time in UTC and convert it to naive datetime
     current_time_utc = datetime.now(pytz.timezone('UTC'))
@@ -583,7 +598,7 @@ async def send_message_mute_user(room: str, current_user: models.User,
     # Query to retrieve the ban record for the muted user in the given room
     ban = select(models.Ban).where(
         models.Ban.user_id == current_user.id,
-        models.Ban.room_id == room_record.id,
+        models.Ban.room_id == room_id,
         models.Ban.end_time > current_time_naive  # Filter banned
     )
     ban_result = await session.execute(ban)
@@ -595,30 +610,30 @@ async def send_message_mute_user(room: str, current_user: models.User,
         current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         await manager.send_message_to_user(
             message=f"Sorry, but the owner of the room has blocked you. Until the end of the block remained {minutes:.0f} minutes.",
-            file=None,
-            rooms=room,
+            fileUrl=None,
+            voiceUrl=None,
+            videoUrl=None,
+            room=room_info.name_room,
             created_at=current_time,
-            receiver_id=user.id,
+            receiver_id=sayory.id,
             user_id=current_user.id,
-            user_name=user.user_name,
-            avatar=user.avatar,
-            verified=user.verified,
+            user_name=sayory.user_name,
+            avatar=sayory.avatar,
+            verified=sayory.verified,
             id_return=None,
             add_to_db=False
         )
 
 
-async def ban_user(room: str, current_user: models.User, session: AsyncSession):
-    # room_query = select(models.Rooms).where(models.Rooms.name_room == room)
-    # room_result = await session.execute(room_query)
-    # room_record = room_result.scalar_one_or_none()
-    room_record = await get_room_by_name(room, session)
+async def ban_user(room_id: UUID, current_user: models.User, session: AsyncSession):
+
+    room_record = await get_room_by_id(room_id, session)
     
     if not room_record:
         return
 
     ban_query = select(models.Ban).where(models.Ban.user_id == current_user.id,
-                                         models.Ban.room_id == room_record.id)
+                                         models.Ban.room_id == room_id)
     ban_result = await session.execute(ban_query)
     ban_record = ban_result.scalar()
     
@@ -636,38 +651,17 @@ async def ban_user(room: str, current_user: models.User, session: AsyncSession):
             return True
     else:
         return False
-        
-        
-        
-async def get_room(room_id: int, session: AsyncSession):
-    """
-    Retrieve the name of a room given its unique identifier.
-
-    Args:
-        room_id (int): The unique identifier of the room.
-        session (AsyncSession): The database session.
-
-    Returns:
-        str: The name of the room.
-
-    This function retrieves the room's name from the database using the provided room_id.
-    If the room does not exist, it returns None.
-    """
-    room = select(models.Rooms).where(models.Rooms.id == room_id)
-    result = await session.execute(room)
-    existing_room = result.scalar_one_or_none()
-
-    return existing_room.name_room
 
 
 
 
-async def count_messages_in_room(room_name: str, session: AsyncSession):
+
+async def count_messages_in_room(room_id: UUID, session: AsyncSession):
     """
     Count the number of messages in a specific room.
 
     Args:
-        room_name (int): The unique identifier of the room.
+        room_id (int): The unique identifier of the room.
         session (AsyncSession): The database session.
 
     Returns:
@@ -677,7 +671,7 @@ async def count_messages_in_room(room_name: str, session: AsyncSession):
     It then counts the number of messages and returns the total count.
     """
     
-    count_messages = select(models.Socket).where(models.Socket.rooms == room_name)
+    count_messages = select(models.ChatMessages).where(models.ChatMessages.id == room_id)
     result = await session.execute(count_messages)
     raw_messages = result.all()
     
@@ -689,7 +683,7 @@ async def count_messages_in_room(room_name: str, session: AsyncSession):
 
 
 
-async def start_session(user_id: int, db: AsyncSession):
+async def start_session(user_id: UUID, db: AsyncSession):
     """
     Start a user's online session.
 
@@ -718,7 +712,7 @@ async def start_session(user_id: int, db: AsyncSession):
     await db.refresh(user_time_record)
     return user_time_record
 
-async def end_session(user_id: int, db: AsyncSession):
+async def end_session(user_id: UUID, db: AsyncSession):
     """
     End a user's online session and update the total online time.
 
@@ -750,8 +744,8 @@ async def end_session(user_id: int, db: AsyncSession):
 
 
 # Function for query to database
-async def get_user_status(user_id: int, session: AsyncSession):
-    user_status_query = select(models.User_Status).where(models.User_Status.user_id == user_id)
+async def get_user_status(user_id: UUID, session: AsyncSession):
+    user_status_query = select(models.UserStatus).where(models.UserStatus.user_id == user_id)
     user_status_result = await session.execute(user_status_query)
     return user_status_result.scalar()
 
@@ -760,18 +754,39 @@ async def get_room_by_name(room_name: str, session: AsyncSession):
     room_result = await session.execute(room_query)
     return room_result.scalar()
 
-async def get_vote_for_message(message_id: int, user_id: int, session: AsyncSession):
-    vote_query = select(models.Vote).where(models.Vote.message_id == message_id, models.Vote.user_id == user_id)
+async def get_room_by_id(room_id: UUID, session: AsyncSession):
+    room_query = select(models.Rooms).where(models.Rooms.id == room_id)
+    room_result = await session.execute(room_query)
+    return room_result.scalar_one_or_none()
+
+async def get_vote_for_message(message_id: UUID, user_id: UUID, session: AsyncSession):
+    vote_query = select(models.ChatMessageVote).where(models.ChatMessageVote.message_id == message_id,
+                                                      models.ChatMessageVote.user_id == user_id)
     vote_result = await session.execute(vote_query)
     return vote_result.scalars().first()
 
-async def get_message_by_id(message_id: int, user_id: int, session: AsyncSession):
-    message_query = select(models.Socket).where(models.Socket.id == message_id, models.Socket.receiver_id == user_id)
+async def get_message_by_id(message_id: UUID, user_id: UUID, session: AsyncSession):
+    message_query = select(models.ChatMessages).where(models.ChatMessages.id == message_id,
+                                                      models.ChatMessages.receiver_id == user_id)
     message_result = await session.execute(message_query)
     return message_result.scalar()
 
 
-async def get_user_by_id(user_id: int, session: AsyncSession):
+async def get_user_by_id(user_id: UUID, session: AsyncSession):
     user_query = select(models.User).where(models.User.id == user_id)
     user_result = await session.execute(user_query)
     return user_result.scalar_one_or_none()
+
+
+
+async def get_sayory(session: AsyncSession):
+    sayory = settings.sayory
+    sayory_query = select(models.User).where(models.User.user_name == sayory)
+    sayory_result = await session.execute(sayory_query)
+    return sayory_result.scalar_one_or_none()
+
+async def get_hell(session: AsyncSession):
+    hell = settings.hell
+    hell_query = select(models.Rooms).where(models.Rooms.name_room == hell)
+    hell_result = await session.execute(hell_query)
+    return hell_result.scalar_one_or_none()

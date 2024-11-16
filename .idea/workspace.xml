@@ -4,7 +4,18 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4ee1ecfe-c64d-4381-bed1-a6f6858ee21c" name="Changes" comment="refactoring" />
+    <list default="true" id="4ee1ecfe-c64d-4381-bed1-a6f6858ee21c" name="Changes" comment="refactoring">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/functions/func_socket.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/functions/func_socket.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/models/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/routers/auth.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/routers/auth.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/routers/chat_socket.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/routers/chat_socket.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/schemas/schemas.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/schemas/schemas.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/settings/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/settings/config.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/settings/connection_manager.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/settings/connection_manager.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/settings/oauth2.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/settings/oauth2.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -119,7 +130,14 @@
       <workItem from="1731700131365" duration="296000" />
       <workItem from="1731700437778" duration="1085000" />
       <workItem from="1731701553617" duration="566000" />
-      <workItem from="1731702138400" duration="470000" />
+      <workItem from="1731702138400" duration="3184000" />
+      <workItem from="1731757833330" duration="3000" />
+      <workItem from="1731777050786" duration="505000" />
+      <workItem from="1731777599150" duration="479000" />
+      <workItem from="1731778113338" duration="297000" />
+      <workItem from="1731778433403" duration="30000" />
+      <workItem from="1731778487594" duration="1921000" />
+      <workItem from="1731780455914" duration="4979000" />
     </task>
     <task id="LOCAL-00001" summary="Update Message">
       <option name="closed" value="true" />
@@ -209,7 +227,15 @@
       <option name="project" value="LOCAL" />
       <updated>1731702157146</updated>
     </task>
-    <option name="localTasksCounter" value="12" />
+    <task id="LOCAL-00012" summary="refactoring">
+      <option name="closed" value="true" />
+      <created>1731702774310</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1731702774310</updated>
+    </task>
+    <option name="localTasksCounter" value="13" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
