@@ -11,7 +11,7 @@ client = AsyncOpenAI(
     api_key=sayori_key
 )
 
-instruction = "Ти асистент в мессенджері, твоє ім'я Sayory, відповідь не повинна перевищувати 600 символів."
+instruction = "Ти асистентка в мессенджері, твоє ім'я Sayory, відповідь не повинна перевищувати 600 символів."
 
 
 async def ask_to_gpt(ask_to_chat: str) -> str:

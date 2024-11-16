@@ -37,22 +37,7 @@ async def async_encrypt(data: str):
     return encoded_string
 
 async def async_decrypt(encoded_data: str):
-    """
-    Decrypts a base64 encoded string using a symmetric encryption algorithm.
 
-    Parameters:
-    encoded_data (str): The base64 encoded string to decrypt.
-
-    Returns:
-    Optional[str]: The decrypted string if decryption is successful.
-    None: If decryption fails due to an invalid token or key mismatch.
-
-    This function first checks if the input data is a valid base64 encoded string.
-    If not, it logs an error message and returns the original encoded data.
-    Then, it attempts to decrypt the encoded data using a symmetric encryption algorithm.
-    If decryption is successful, it returns the decrypted string.
-    If decryption fails due to an invalid token or key mismatch, it logs an error message and returns None.
-    """
     if not is_base64(encoded_data):
         # logger.error(f"Data is not valid base64, returning original data: {encoded_data}")
         return encoded_data

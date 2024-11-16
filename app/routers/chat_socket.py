@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.functions.func_socket import update_user_status, change_message, fetch_last_messages, update_room_for_user, \
     update_room_for_user_live, process_vote, delete_message, fetch_one_message, send_messages_via_websocket, \
-    get_room_by_id, get_hell
+    get_room_by_id, get_hell, get_sayory
 from app.functions.func_socket import fetch_room_data, send_message_blocking, ban_user, send_message_mute_user, \
     start_session, end_session, send_message_deleted_room, count_messages_in_room
 
@@ -196,19 +196,21 @@ async def websocket_endpoint(
                     room_id=room_id,
                     add_to_db=True
                 )
-
-                if censor_message is not None and tag_sayory(censored_message):
+                if not censored_message:
+                    pass
+                elif tag_sayory(censored_message):
                     response_sayory = await sayory.ask_to_gpt(censored_message)
+                    sayory_user = await get_sayory(session)
                     await manager.broadcast_all(
-                        message=censored_message,
+                        message=response_sayory,
                         fileUrl=file_url,
                         voiceUrl=voice_url,
                         videoUrl=video_url,
                         room=room.name_room,
-                        receiver_id=user.id,
-                        user_name=user.user_name,
-                        avatar=user.avatar,
-                        verified=user.verified,
+                        receiver_id=sayory_user.id,
+                        user_name=sayory_user.user_name,
+                        avatar=sayory_user.avatar,
+                        verified=sayory_user.verified,
                         id_return=original_message_id,
                         room_id=room_id,
                         add_to_db=True
