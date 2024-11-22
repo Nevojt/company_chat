@@ -4,10 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4ee1ecfe-c64d-4381-bed1-a6f6858ee21c" name="Changes" comment="refactoring and update">
+    <list default="true" id="4ee1ecfe-c64d-4381-bed1-a6f6858ee21c" name="Changes" comment="update sayory">
+      <change afterPath="$PROJECT_DIR$/.env-copy" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/AI/sayory.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/AI/sayory.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/functions/func_socket.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/functions/func_socket.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/routers/chat_socket.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/routers/chat_socket.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -132,7 +131,12 @@
       <workItem from="1731778433403" duration="30000" />
       <workItem from="1731778487594" duration="1921000" />
       <workItem from="1731780455914" duration="5214000" />
-      <workItem from="1731785822572" duration="918000" />
+      <workItem from="1731785822572" duration="1174000" />
+      <workItem from="1731869262597" duration="24000" />
+      <workItem from="1731869489323" duration="14000" />
+      <workItem from="1731869686541" duration="17000" />
+      <workItem from="1732051030387" duration="19000" />
+      <workItem from="1732308570671" duration="63000" />
     </task>
     <task id="LOCAL-00001" summary="Update Message">
       <option name="closed" value="true" />
@@ -238,7 +242,15 @@
       <option name="project" value="LOCAL" />
       <updated>1731785498934</updated>
     </task>
-    <option name="localTasksCounter" value="14" />
+    <task id="LOCAL-00014" summary="update sayory">
+      <option name="closed" value="true" />
+      <created>1731786905746</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1731786905746</updated>
+    </task>
+    <option name="localTasksCounter" value="15" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -291,7 +303,8 @@
     <MESSAGE value="update type message" />
     <MESSAGE value="refactoring" />
     <MESSAGE value="refactoring and update" />
-    <option name="LAST_COMMIT_MESSAGE" value="refactoring and update" />
+    <MESSAGE value="update sayory" />
+    <option name="LAST_COMMIT_MESSAGE" value="update sayory" />
   </component>
   <component name="WfRunsListSearchHistory">{
   &quot;history&quot;: [

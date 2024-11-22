@@ -78,17 +78,14 @@ async def websocket_endpoint(
     await update_user_status(user.id, True, session)
 
     messages = await fetch_last_messages(room_id, limit, session)
-    print("1")
 
     await send_messages_via_websocket(messages, websocket)
-    print("2")
 
     await send_message_deleted_room(room_id, manager, session)
-    print("3")
+
     try:
         while True:
             data = await websocket.receive_json()
-            print("Received data")
 
             if 'type' in data:
                 if not user_baned:
