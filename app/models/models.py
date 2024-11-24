@@ -26,7 +26,7 @@ class ChatMessages(Base):
     receiver_id = Column(UUID, ForeignKey('users.id', ondelete='SET NULL'))
     rooms = Column(String, ForeignKey('rooms.name_room', ondelete='CASCADE', onupdate='CASCADE'), nullable=False)
     room_id = Column(UUID, ForeignKey('rooms.id', ondelete='CASCADE'))
-    id_return = Column(Integer)
+    id_return = Column(UUID, nullable=True)
 
     edited = Column(Boolean, server_default='false')
     return_message = Column(JSON, server_default=None)
